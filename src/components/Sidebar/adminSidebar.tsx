@@ -3,6 +3,7 @@
 import { BsCalendar3, BsGrid1X2, BsPeople } from "react-icons/bs";
 import { LuSettings, LuLogOut } from "react-icons/lu";
 import { usePathname, useRouter } from "next/navigation";
+import useLoginStore from "@/store/login";
 
 type NavItem = {
   label: string;
@@ -36,6 +37,7 @@ const navItems: NavItem[] = [
 export default function AdminSidebar() {
   const router = useRouter();
   const pathname = usePathname();
+  const logout = useLoginStore((state) => state.logout);
 
   const isRouteActive = (href: string) => {
     if (href === "/admin/dashboard" && pathname === "/admin") {
@@ -43,6 +45,11 @@ export default function AdminSidebar() {
     }
 
     return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
+  const handleLogout = () => {
+    logout();
+    router.replace("/login");
   };
 
   return (
@@ -105,6 +112,7 @@ export default function AdminSidebar() {
           <button
             type="button"
             aria-label="Logout"
+            onClick={handleLogout}
             className="ml-auto text-slate-400 transition-colors hover:text-slate-600"
           >
             <LuLogOut size={16} />

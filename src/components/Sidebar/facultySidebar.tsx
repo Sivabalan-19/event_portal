@@ -4,6 +4,7 @@ import { BsCalendar3, BsMic } from "react-icons/bs";
 import { LuLogOut } from "react-icons/lu";
 import { RiDashboardLine } from "react-icons/ri";
 import { usePathname, useRouter } from "next/navigation";
+import useLoginStore from "@/store/login";
 
 type NavItem = {
   label: string;
@@ -32,6 +33,7 @@ const navItems: NavItem[] = [
 export default function FacultySidebar() {
   const router = useRouter();
   const pathname = usePathname();
+  const logout = useLoginStore((state) => state.logout);
 
   const isRouteActive = (href: string) => {
     if (href === "/faculty/dashboard" && pathname === "/faculty") {
@@ -39,6 +41,11 @@ export default function FacultySidebar() {
     }
 
     return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
+  const handleLogout = () => {
+    logout();
+    router.replace("/login");
   };
 
   return (
@@ -84,7 +91,11 @@ export default function FacultySidebar() {
         </nav>
       </div>
 
-      <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm font-medium text-gray-700 transition-colors duration-150 hover:bg-gray-100">
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm font-medium text-gray-700 transition-colors duration-150 hover:bg-gray-100"
+      >
         <LuLogOut size={16} />
         Logout
       </button>

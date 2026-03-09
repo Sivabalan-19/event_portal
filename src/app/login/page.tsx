@@ -1,7 +1,9 @@
 "use client";
 import { Input } from "@/components/index";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useLoginStore from "@/store/login";
+import { getDefaultRouteForRole, getRoleFromToken, getStoredToken } from "@/utils/auth";
+import { useRouter } from "next/navigation";
 import {
   AiOutlineMail,
   AiOutlineLock,
@@ -11,15 +13,29 @@ import {
 
 function Page() {
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
   const { form, setForm, login, isLoading, error, clearError } =
     useLoginStore();
+
+  useEffect(() => {
+    const role = getRoleFromToken(getStoredToken());
+
+    if (role) {
+      router.replace(getDefaultRouteForRole(role));
+    }
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-      await login();
+      const response = await login();
+      const role = getRoleFromToken(response.token);
+
+      if (role) {
+        router.replace(getDefaultRouteForRole(role));
+      }
     } catch {
     }
   };

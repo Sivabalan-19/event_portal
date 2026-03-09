@@ -1,8 +1,13 @@
 import { create } from "zustand";
 
 import { createData } from "@/utils/axios";
-
-export const AUTH_TOKEN_KEY = "token";
+import {
+  AUTH_TOKEN_KEY,
+  clearStoredToken,
+  getRoleFromToken,
+  getStoredToken,
+  type UserRole,
+} from "@/utils/auth";
 
 export type LoginPayload = {
   email: string;
@@ -21,6 +26,7 @@ export type LoginFormState = LoginPayload & {
 type LoginStore = {
   form: LoginFormState;
   token: string | null;
+  role: UserRole | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -46,29 +52,10 @@ function getStorage(rememberMe: boolean): Storage | null {
   return rememberMe ? window.localStorage : window.sessionStorage;
 }
 
-function getStoredToken(): string | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return (
-    window.localStorage.getItem(AUTH_TOKEN_KEY) ||
-    window.sessionStorage.getItem(AUTH_TOKEN_KEY)
-  );
-}
-
-function clearStoredToken() {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.removeItem(AUTH_TOKEN_KEY);
-  window.sessionStorage.removeItem(AUTH_TOKEN_KEY);
-}
-
 export const useLoginStore = create<LoginStore>((set, get) => ({
   form: initialForm,
   token: null,
+  role: null,
   isAuthenticated: false,
   isLoading: false,
   error: null,
@@ -92,10 +79,12 @@ export const useLoginStore = create<LoginStore>((set, get) => ({
 
   hydrateAuth: () => {
     const token = getStoredToken();
+    const role = getRoleFromToken(token);
 
     set({
       token,
-      isAuthenticated: Boolean(token),
+      role,
+      isAuthenticated: Boolean(token && role),
     });
   },
 
@@ -117,10 +106,12 @@ export const useLoginStore = create<LoginStore>((set, get) => ({
 
       clearStoredToken();
       getStorage(form.rememberMe)?.setItem(AUTH_TOKEN_KEY, response.token);
+      const role = getRoleFromToken(response.token);
 
       set({
         token: response.token,
-        isAuthenticated: true,
+        role,
+        isAuthenticated: Boolean(role),
         isLoading: false,
       });
 
@@ -132,6 +123,7 @@ export const useLoginStore = create<LoginStore>((set, get) => ({
       set({
         error: message,
         isLoading: false,
+        role: null,
         isAuthenticated: false,
       });
 
@@ -145,6 +137,7 @@ export const useLoginStore = create<LoginStore>((set, get) => ({
     set({
       form: initialForm,
       token: null,
+      role: null,
       error: null,
       isLoading: false,
       isAuthenticated: false,

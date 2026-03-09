@@ -1,4 +1,5 @@
 import AdminSidebar from "@/components/Sidebar/adminSidebar";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export default function AdminLayout({
   children,
@@ -8,8 +9,10 @@ export default function AdminLayout({
   return (
     <html lang="en">
       <body className="flex h-screen">
-        <AdminSidebar />
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <ProtectedRoute allowedRoles={["superadmin"]}>
+          <AdminSidebar />
+          <main className="flex-1 overflow-y-auto">{children}</main>
+        </ProtectedRoute>
       </body>
     </html>
   );

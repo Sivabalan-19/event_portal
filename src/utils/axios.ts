@@ -94,6 +94,19 @@ export async function updateData<TResponse, TPayload = unknown>(
 	}
 }
 
+export async function patchData<TResponse, TPayload = unknown>(
+	url: string,
+	payload?: TPayload,
+	config?: AxiosRequestConfig,
+): Promise<TResponse> {
+	try {
+		const response = await api.patch<TResponse>(url, payload, config);
+		return response.data;
+	} catch (error) {
+		return normalizeError(error);
+	}
+}
+
 export async function deleteData<TResponse>(
 	url: string,
 	config?: AxiosRequestConfig,

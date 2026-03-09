@@ -1,64 +1,48 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import type React from "react";
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import Link from "next/link";
 import { Input } from "@/components";
 import SectionTitle from "@/components/sectionTitle";
 import { BsSearch } from "react-icons/bs";
 import { FiMic, FiPlus } from "react-icons/fi";
 
-type Speaker = {
-  id: number;
-  name: string;
-  expertise: string;
-  organization: string;
-  email: string;
-  sessions: number;
-  status: "Available" | "Busy";
-};
+type SpeakerStatus = "pending" | "accepted" | "rejected";
 
-const initialSpeakers: Speaker[] = [
-  {
-    id: 1,
-    name: "Dr. Sarah Jenkins",
-    expertise: "Artificial Intelligence",
-    organization: "Tech Research Lab",
-    email: "sarah.jenkins@example.com",
-    sessions: 6,
-    status: "Available",
-  },
-  {
-    id: 2,
-    name: "Prof. Michael Chen",
-    expertise: "Robotics",
-    organization: "School of Engineering",
-    email: "michael.chen@example.com",
-    sessions: 4,
-    status: "Busy",
-  },
-  {
-    id: 3,
-    name: "Alex Rivera",
-    expertise: "Product Design",
-    organization: "Pixel Foundry",
-    email: "alex.rivera@example.com",
-    sessions: 3,
-    status: "Available",
-  },
-  {
-    id: 4,
-    name: "Maria Gonzalez",
-    expertise: "Digital Marketing",
-    organization: "Growth House",
-    email: "maria.gonzalez@example.com",
-    sessions: 5,
-    status: "Available",
-  },
-];
+type Speaker = {
+  _id: string;
+  name: string;
+  expertise?: string;
+  organization?: string;
+  email?: string;
+  status: SpeakerStatus;
+};
 
 export default function FacultySpeakerPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [speakers] = useState<Speaker[]>(initialSpeakers);
+  const [speakers, setSpeakers] = useState<Speaker[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSpeakers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await axios.get("http://localhost:3004/api/speakers/admin");
+        setSpeakers(response.data?.speakers ?? []);
+      } catch (err: any) {
+        console.error("Failed to load speakers", err);
+        setError(err?.message || "Failed to load speakers");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSpeakers();
+  }, []);
 
   const filteredSpeakers = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
@@ -100,7 +84,9 @@ export default function FacultySpeakerPage() {
               id="speaker-table-search"
               label=""
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSearchTerm(e.target.value)
+              }
               placeholder="Search speakers, topics, or organizations"
               icon={<BsSearch size={14} className="text-slate-400" />}
             />
@@ -113,8 +99,9 @@ export default function FacultySpeakerPage() {
                   Speaker List
                 </h3>
                 <p className="text-sm text-slate-500">
-                  {filteredSpeakers.length} speaker profiles available for event
-                  scheduling.
+                  {loading
+                    ? "Loading speakers..."
+                    : `${filteredSpeakers.length} speaker profiles available for event scheduling.`}
                 </p>
               </div>
               <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
@@ -131,12 +118,11 @@ export default function FacultySpeakerPage() {
                     <th className="px-6 py-4">Expertise</th>
                     <th className="px-6 py-4">Organization</th>
                     <th className="px-6 py-4">Email</th>
-                    <th className="px-6 py-4">Sessions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
                   {filteredSpeakers.map((speaker) => (
-                    <tr key={speaker.id} className="hover:bg-slate-50/80">
+                    <tr key={speaker._id} className="hover:bg-slate-50/80">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700">
@@ -157,19 +143,28 @@ export default function FacultySpeakerPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-slate-600">
-                        {speaker.expertise}
+                        {speaker.expertise || "-"}
                       </td>
                       <td className="px-6 py-4 text-slate-600">
-                        {speaker.organization}
+                        {speaker.organization || "-"}
                       </td>
                       <td className="px-6 py-4 text-slate-600">
-                        {speaker.email}
-                      </td>
-                      <td className="px-6 py-4 font-semibold text-slate-700">
-                        {speaker.sessions}
+                        {speaker.email || "-"}
                       </td>
                     </tr>
                   ))}
+                  {!loading && filteredSpeakers.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={4}
+                        className="px-6 py-8 text-center text-sm text-slate-500"
+                      >
+                        {error
+                          ? "Failed to load speakers. Please try again later."
+                          : "No speakers found. Create a new speaker to see it listed here."}
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

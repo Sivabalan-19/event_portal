@@ -5,6 +5,7 @@ import { BsCalendar3 } from "react-icons/bs";
 import { TbClipboardList } from "react-icons/tb";
 import { LuLogOut } from "react-icons/lu";
 import { usePathname, useRouter } from "next/navigation";
+import useLoginStore from "@/store/login";
 
 type NavItem = {
   label: string;
@@ -33,9 +34,15 @@ const navItems: NavItem[] = [
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
+  const logout = useLoginStore((state) => state.logout);
 
   const isRouteActive = (href: string) => {
     return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
+  const handleLogout = () => {
+    logout();
+    router.replace("/login");
   };
 
   return (
@@ -84,7 +91,11 @@ export default function Sidebar() {
       </div>
 
       {/* Logout */}
-      <button className="flex items-center justify-center gap-2 w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-150">
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="flex items-center justify-center gap-2 w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-150"
+      >
         <LuLogOut size={16} />
         Logout
       </button>

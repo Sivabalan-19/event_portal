@@ -15,12 +15,17 @@ type EventCardProps = {
 };
 
 const tagColors: Record<string, string> = {
-  TECHNICAL: "blue-600",
-  CULTURAL: "orange-500",
-  WORKSHOP: "green-500",
+  TECHNICAL: "text-blue-600 bg-blue-600",
+  CULTURAL: "text-orange-500 bg-orange-500",
+  WORKSHOP: "text-green-500 bg-green-500",
+  SEMINAR: "text-amber-600 bg-amber-500",
+  NETWORKING: "text-rose-600 bg-rose-500",
+  EVENT: "text-slate-600 bg-slate-500",
 };
 
 export default function EventCard({ event }: { event: EventCardProps }) {
+  const [dateTextClass, tagBgClass] = (tagColors[event.tag] || tagColors.EVENT).split(" ");
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col">
       {/* Image */}
@@ -32,9 +37,7 @@ export default function EventCard({ event }: { event: EventCardProps }) {
         />
         {/* Date Badge */}
         <div className="absolute top-3 left-3 bg-white rounded-lg text-center px-2 py-2 shadow-sm min-w-[42px]">
-          <p
-            className={`text-[10px] font-bold text-${tagColors[event.tag]} uppercase leading-none`}
-          >
+          <p className={`text-[10px] font-bold uppercase leading-none ${dateTextClass}`}>
             {event.month}
           </p>
           <p className="text-lg font-extrabold text-gray-900 leading-tight">
@@ -43,7 +46,7 @@ export default function EventCard({ event }: { event: EventCardProps }) {
         </div>
         {/* Tag Badge */}
         <span
-          className={`absolute top-3 right-3 bg-${tagColors[event.tag]} text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide`}
+          className={`absolute top-3 right-3 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide ${tagBgClass}`}
         >
           {event.tag}
         </span>
@@ -62,7 +65,12 @@ export default function EventCard({ event }: { event: EventCardProps }) {
           <MdPerson size={14} />
           <span>{event.speaker}</span>
         </div>
-        <button className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors duration-150">
+        <button
+          type="button"
+          onClick={event.onDetails}
+          className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors duration-150 disabled:cursor-not-allowed disabled:bg-slate-300"
+          disabled={!event.onDetails}
+        >
           View Details
         </button>
       </div>

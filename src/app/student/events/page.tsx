@@ -1,16 +1,30 @@
 "use client";
 
-import { useState } from "react";
-import { EventCard, Input } from "@/components";
-import { MdLocationOn, MdPerson } from "react-icons/md";
-import { BsSearch, BsCalendar3 } from "react-icons/bs";
-import { RxDragHandleHorizontal } from "react-icons/rx";
-
-import { FiChevronDown, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { BsCalendar3, BsSearch } from "react-icons/bs";
 import { IoCodeSlash } from "react-icons/io5";
 import { GiMusicalNotes } from "react-icons/gi";
 import { MdOutlineDesignServices } from "react-icons/md";
+
+import { EventCard, Input } from "@/components";
 import SectionTitle from "@/components/sectionTitle";
+import { fetchData } from "@/utils/axios";
+
+type Speaker = {
+  _id: string;
+  name: string;
+};
+
+type EventRecord = {
+  _id: string;
+  title: string;
+  category?: string;
+  date?: string;
+  venue?: string;
+  speakers?: Speaker[];
+  coverImageName?: string;
+};
 
 const filters = [
   "All Events",
@@ -28,114 +42,140 @@ const filterIcons: Record<string, React.ReactNode> = {
   "Pick Date": <BsCalendar3 size={12} />,
 };
 
-const tagColors: Record<string, string> = {
-  TECHNICAL: "bg-blue-600",
-  CULTURAL: "bg-orange-500",
-  WORKSHOP: "bg-green-500",
-};
+const FALLBACK_EVENT_IMAGE =
+  "https://placehold.co/600x360/e2e8f0/0f172a?text=Campus+Event";
 
-const events = [
-  {
-    id: 1,
-    image:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80",
-    month: "OCT",
-    day: "24",
-    tag: "TECHNICAL",
-    title: "Annual AI Hackathon 2024",
-    location: "Main Tech Auditorium",
-    speaker: "Dr. Sarah Jenkins",
-  },
-  {
-    id: 2,
-    image:
-      "https://images.unsplash.com/photo-1504609813442-a8924e83f76e?w=600&q=80",
-    month: "NOV",
-    day: "02",
-    tag: "CULTURAL",
-    title: "Campus Rhythm: Dance...",
-    location: "Open Air Theatre",
-    speaker: "Cultural Committee",
-  },
-  {
-    id: 3,
-    image:
-      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&q=80",
-    month: "NOV",
-    day: "05",
-    tag: "WORKSHOP",
-    title: "UI/UX Design Essentials",
-    location: "Seminar Hall B",
-    speaker: "Alex Rivera",
-  },
-  {
-    id: 4,
-    image:
-      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&q=80",
-    month: "NOV",
-    day: "08",
-    tag: "CULTURAL",
-    title: "Acoustic Night - Coffee &...",
-    location: "Student Lounge",
-    speaker: "Campus Band",
-  },
-  {
-    id: 5,
-    image:
-      "https://images.unsplash.com/photo-1560439513-74b037a25d84?w=600&q=80",
-    month: "NOV",
-    day: "12",
-    tag: "WORKSHOP",
-    title: "Digital Marketing...",
-    location: "Business School Annex",
-    speaker: "Maria Gonzalez",
-  },
-  {
-    id: 6,
-    image:
-      "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=600&q=80",
-    month: "NOV",
-    day: "15",
-    tag: "TECHNICAL",
-    title: "RoboWars: Campus Finals",
-    location: "Engineering Quad",
-    speaker: "Engineering Club",
-  },
-];
+function getParsedDate(date?: string) {
+  if (!date) {
+    return null;
+  }
+
+  const parsedDate = new Date(date);
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+function formatEventDate(date?: string) {
+  const parsedDate = getParsedDate(date);
+
+  if (!parsedDate) {
+    return { day: "--", month: "TBD" };
+  }
+
+  return {
+    day: parsedDate.toLocaleDateString("en-US", { day: "2-digit" }),
+    month: parsedDate
+      .toLocaleDateString("en-US", { month: "short" })
+      .toUpperCase(),
+  };
+}
 
 export default function AllEventsPage() {
+  const router = useRouter();
   const [activeFilter, setActiveFilter] = useState("All Events");
-  const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const totalPages = 12;
+  const [events, setEvents] = useState<EventRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetchData<{ events: EventRecord[] }>("/events/active");
+        setEvents(response.events ?? []);
+        setError(null);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to load active events";
+        setError(message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEvents();
+  }, []);
+
+  const filteredEvents = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    return events
+      .filter((event) => {
+        const category = event.category || "";
+        const matchesFilter =
+          activeFilter === "All Events" ||
+          (activeFilter === "Technical" && category === "Technical") ||
+          (activeFilter === "Cultural" && category === "Cultural") ||
+          (activeFilter === "Workshops" && category === "Workshop") ||
+          (activeFilter === "Pick Date" && Boolean(getParsedDate(event.date)));
+
+        const speakerNames =
+          event.speakers?.map((speaker) => speaker.name).join(" ") || "";
+        const matchesSearch =
+          normalizedSearch.length === 0 ||
+          [event.title, event.venue, category, speakerNames]
+            .join(" ")
+            .toLowerCase()
+            .includes(normalizedSearch);
+
+        return matchesFilter && matchesSearch;
+      })
+      .sort((left, right) => {
+        const leftDate = getParsedDate(left.date)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+        const rightDate = getParsedDate(right.date)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+        return leftDate - rightDate;
+      });
+  }, [activeFilter, events, searchTerm]);
+
+  const eventCards = useMemo(
+    () =>
+      filteredEvents.map((event) => {
+        const formattedDate = formatEventDate(event.date);
+
+        return {
+          image: FALLBACK_EVENT_IMAGE,
+          month: formattedDate.month,
+          day: formattedDate.day,
+          tag: (event.category || "Event").toUpperCase(),
+          title: event.title,
+          location: event.venue || "Venue to be announced",
+          speaker:
+            event.speakers?.map((speaker) => speaker.name).join(", ") ||
+            "Speaker to be announced",
+          date: event.date || "",
+          onDetails: () => router.push(`/student/events/${event._id}`),
+        };
+      }),
+    [filteredEvents, router],
+  );
 
   return (
-    <div className="min-h-screen pt-8 p-6 bg-gray-100 font-sans">
-      {/* Main */}
+    <div className="min-h-screen bg-gray-100 p-6 pt-8 font-sans">
       <SectionTitle
         title="Browse Events"
-        description="Discover and join upcoming campus events"
+        description="Discover active campus events that are open right now."
       />
-      <div className="flex-1 mt-5 flex flex-col gap-5">
-        {/* Search + Controls */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex flex-wrap flex-col items-start gap-2">
+
+      <div className="mt-5 flex flex-col gap-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col items-start gap-2">
             <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">
               Filters:
             </span>
-            <div className="flex gap-2">
-              {filters.map((f) => (
+            <div className="flex flex-wrap gap-2">
+              {filters.map((filter) => (
                 <button
-                  key={f}
-                  onClick={() => setActiveFilter(f)}
+                  key={filter}
+                  type="button"
+                  onClick={() => setActiveFilter(filter)}
                   className={`flex cursor-pointer items-center gap-1.5 rounded-2xl border px-5 py-3.5 text-xs font-semibold transition-colors duration-150 ${
-                    activeFilter === f
+                    activeFilter === filter
                       ? "border-blue-600 bg-blue-600 text-white"
                       : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
                   }`}
                 >
-                  {filterIcons[f]}
-                  {f}
+                  {filterIcons[filter]}
+                  {filter}
                 </button>
               ))}
             </div>
@@ -152,54 +192,30 @@ export default function AllEventsPage() {
           </div>
         </div>
 
-        {/* Filter Pills */}
+        {error && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
-        {/* Event Grid */}
-        <div className="grid grid-cols-3 gap-4">
-          {events.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-        </div>
-
-        {/* Pagination */}
-        <div className="flex items-center justify-center gap-2 mt-2">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-gray-600"
-          >
-            <FiChevronLeft size={14} />
-          </button>
-          {[1, 2, 3].map((p) => (
-            <button
-              key={p}
-              onClick={() => setCurrentPage(p)}
-              className={`w-8 h-8 rounded-full text-sm font-semibold transition-colors ${
-                currentPage === p
-                  ? "bg-blue-600 text-white"
-                  : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-          <span className="text-gray-400 text-sm">...</span>
-          <button
-            onClick={() => setCurrentPage(totalPages)}
-            className={`w-8 h-8 rounded-full text-sm font-semibold transition-colors ${
-              currentPage === totalPages
-                ? "bg-blue-600 text-white"
-                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-            }`}
-          >
-            {totalPages}
-          </button>
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-gray-600"
-          >
-            <FiChevronRight size={14} />
-          </button>
-        </div>
+        {isLoading ? (
+          <div className="rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center text-sm text-slate-500 shadow-sm shadow-slate-200/40">
+            Loading active events...
+          </div>
+        ) : eventCards.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {eventCards.map((event) => (
+              <EventCard key={`${event.title}-${event.date}`} event={event} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center shadow-sm shadow-slate-200/40">
+            <p className="text-lg font-bold text-slate-800">No active events found</p>
+            <p className="mt-2 text-sm text-slate-500">
+              Try a different filter or search term.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
