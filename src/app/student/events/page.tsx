@@ -103,54 +103,6 @@ const events = [
   },
 ];
 
-// function EventCard({ event }: { event: (typeof events)[0] }) {
-//   return (
-//     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col">
-//       {/* Image */}
-//       <div className="relative h-44">
-//         <img
-//           src={event.image}
-//           alt={event.title}
-//           className="w-full h-full object-cover"
-//         />
-//         {/* Date Badge */}
-//         <div className="absolute top-3 left-3 min-w-10.5 rounded-lg bg-white px-2 py-1 text-center shadow-sm">
-//           <p className="text-[10px] font-bold text-gray-500 uppercase leading-none">
-//             {event.month}
-//           </p>
-//           <p className="text-lg font-extrabold text-gray-900 leading-tight">
-//             {event.day}
-//           </p>
-//         </div>
-//         {/* Tag Badge */}
-//         <span
-//           className={`absolute top-3 right-3 ${tagColors[event.tag]} text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide`}
-//         >
-//           {event.tag}
-//         </span>
-//       </div>
-
-//       {/* Body */}
-//       <div className="p-4 flex flex-col gap-2 flex-1">
-//         <h3 className="font-bold text-gray-900 text-sm leading-snug">
-//           {event.title}
-//         </h3>
-//         <div className="flex items-center gap-1.5 text-gray-500 text-xs">
-//           <MdLocationOn size={14} />
-//           <span>{event.location}</span>
-//         </div>
-//         <div className="flex items-center gap-1.5 text-gray-500 text-xs">
-//           <MdPerson size={14} />
-//           <span>{event.speaker}</span>
-//         </div>
-//         <button className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors duration-150">
-//           View Details
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
-
 export default function AllEventsPage() {
   const [activeFilter, setActiveFilter] = useState("All Events");
   const [currentPage, setCurrentPage] = useState(1);
