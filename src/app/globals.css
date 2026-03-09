@@ -1,26 +1,64 @@
 @import "tailwindcss";
-
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+/* Light theme (default) */
+[data-theme="light"] {
+  --color-background: #ffffff;
+  --color-foreground: #0b0b0b;
+  --color-primary: #ff6a00; /* Orange primary */
+  --color-muted: #6b7280;
+  --surface: #ffffff;
+}
+
+/* Dark / Black tech theme */
+[data-theme="dark"] {
+  --color-background: #0a0a0a;
+  --color-foreground: #eaeaea;
+  --color-primary: #ff6a00; /* Orange primary stays same */
+  --color-muted: #9ca3af;
+  --surface: #0f0f0f;
+}
+
+/* Respect OS preference as an initial hint */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  html:not([data-theme]) {
+    --color-background: #0a0a0a;
+    --color-foreground: #eaeaea;
+    --color-primary: #ff6a00;
+    --color-muted: #9ca3af;
+    --surface: #0f0f0f;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-background);
+  color: var(--color-foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+/* Utility for primary buttons */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Simple theme-toggle styles */
+.theme-toggle {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 60;
+  background: var(--surface);
+  border: 1px solid rgba(0,0,0,0.06);
+  padding: 0.25rem;
+  border-radius: 9999px;
 }
