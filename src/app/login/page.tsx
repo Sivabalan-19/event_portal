@@ -1,6 +1,7 @@
 "use client";
 import { Input } from "@/components/index";
 import { useState } from "react";
+import useLoginStore from "@/store/login";
 import {
   AiOutlineMail,
   AiOutlineLock,
@@ -11,15 +12,16 @@ import {
 function Page() {
   const [showPassword, setShowPassword] = useState(false);
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    isRemeber: false,
-  });
+  const { form, setForm, login, isLoading, error, clearError } =
+    useLoginStore();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    alert(`Signing in as ${formData.email}`);
+
+    try {
+      await login();
+    } catch {
+    }
   };
 
   return (
@@ -113,10 +115,11 @@ function Page() {
                   type="email"
                   placeholder="name@college.edu"
                   icon={<AiOutlineMail />}
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
+                  value={form.email}
+                  onChange={(e) => {
+                    clearError();
+                    setForm({ email: e.target.value });
+                  }}
                 />
 
                 {/* Password */}
@@ -127,10 +130,11 @@ function Page() {
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     icon={<AiOutlineLock />}
-                    value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
+                    value={form.password}
+                    onChange={(e) => {
+                      clearError();
+                      setForm({ password: e.target.value });
+                    }}
                     rightElement={
                       <button
                         type="button"
@@ -152,10 +156,8 @@ function Page() {
                   <input
                     id="remember"
                     type="checkbox"
-                    checked={formData.isRemeber}
-                    onChange={(e) =>
-                      setFormData({ ...formData, isRemeber: e.target.checked })
-                    }
+                    checked={form.rememberMe}
+                    onChange={(e) => setForm({ rememberMe: e.target.checked })}
                     className="w-4 h-4 rounded border-slate-300 text-blue-600"
                   />
                   <label
@@ -166,12 +168,19 @@ function Page() {
                   </label>
                 </div>
 
+                {error && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {error}
+                  </div>
+                )}
+
                 {/* Submit */}
                 <button
                   type="submit"
-                  className="bg-blue-500 hover:bg-blue-600 text-white w-full font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group"
+                  disabled={isLoading}
+                  className="bg-blue-500 hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-70 text-white w-full font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group"
                 >
-                  Sign in
+                  {isLoading ? "Signing in..." : "Sign in"}
                   <span className="material-symbols-outlined text-xl transition-transform group-hover:translate-x-1">
                     arrow_forward
                   </span>
