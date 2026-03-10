@@ -1,3 +1,5 @@
+"use client";
+import { useRouter } from "next/navigation";
 import { BsCalendar3, BsThreeDotsVertical } from "react-icons/bs";
 import { FiArrowUpRight } from "react-icons/fi";
 import { MdLocationOn } from "react-icons/md";
@@ -5,6 +7,7 @@ import { MdLocationOn } from "react-icons/md";
 type RegistrationStatus = "registered" | "waitlisted";
 
 type RegistrationCardProps = {
+  eventId: string;
   image: string;
   title: string;
   reference: string;
@@ -34,6 +37,7 @@ const statusStyles: Record<
 export type { RegistrationCardProps, RegistrationStatus };
 
 export default function RegistrationCard({
+  eventId,
   image,
   title,
   reference,
@@ -45,6 +49,7 @@ export default function RegistrationCard({
   primaryActionLabel,
   secondaryActionLabel,
 }: RegistrationCardProps) {
+  const router = useRouter();
   const statusLabel =
     status === "waitlisted" && waitlistPosition
       ? `WAITLISTED (POS. ${waitlistPosition})`
@@ -91,6 +96,7 @@ export default function RegistrationCard({
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <button
               type="button"
+              onClick={() => router.push(`/student/events/${eventId}`)}
               className={`inline-flex items-center gap-1 text-sm font-semibold transition-colors ${statusStyles[status].primaryActionClass}`}
             >
               {primaryActionLabel}

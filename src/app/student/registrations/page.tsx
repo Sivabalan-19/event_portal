@@ -23,6 +23,7 @@ type EventRecord = {
   time?: string;
   venue?: string;
   speakers?: Speaker[];
+  coverImageUrl?: string;
 };
 
 type RegistrationItem = {
@@ -175,11 +176,12 @@ export default function StudentRegistrationsPage() {
             Loading your registrations...
           </div>
         ) : filteredRegistrations.length > 0 ? (
-          <div className="grid grid-cols-1 gap-5 2xl:grid-cols-2">
+          <div className="grid grid-cols-2 gap-5 2xl:grid-cols-2">
             {filteredRegistrations.map((registration) => (
               <RegistrationCard
                 key={registration._id}
-                image={FALLBACK_EVENT_IMAGE}
+                eventId={registration.event._id}
+                image={registration.event.coverImageUrl || FALLBACK_EVENT_IMAGE}
                 title={registration.event.title}
                 reference={buildReference(registration._id)}
                 date={registration.event.date || "Date to be announced"}
@@ -188,7 +190,7 @@ export default function StudentRegistrationsPage() {
                 status={formatRegistrationStatus(registration.status)}
                 waitlistPosition={registration.waitlistPosition}
                 primaryActionLabel={
-                  registration.tab === "past" ? "View Summary" : "View Ticket"
+                  registration.tab === "past" ? "View Summary" : "View Event"
                 }
                 secondaryActionLabel={
                   registration.status === "waitlisted" ? "Cancel Request" : undefined

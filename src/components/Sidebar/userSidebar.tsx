@@ -56,10 +56,10 @@ export default function Sidebar() {
             </div>
             <div>
               <p className="text-lg font-bold leading-tight text-slate-900">
-                EduVent Portal
+                CampusConnect
               </p>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
-                Admin Panel
+                User Panel
               </p>
             </div>
           </div>
