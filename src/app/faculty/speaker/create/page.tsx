@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useRef, useState } from "react";
-import axios from "axios";
+import { createData } from "@/utils/axios";
 import { Input } from "@/components";
 import SectionTitle from "@/components/sectionTitle";
 import {
@@ -74,7 +74,7 @@ export default function CreateSpeakerPage() {
     try {
       setSubmitting(true);
 
-      await axios.post(`http://localhost:3004/api/speakers/create`, {
+      await createData("/speakers/create", {
         ...form,
         profileImageName,
       });
@@ -92,11 +92,9 @@ export default function CreateSpeakerPage() {
         bio: "",
       });
       setProfileImageName("");
-    } catch (err: any) {
+    } catch (err) {
       const message =
-        err?.response?.data?.error ||
-        err?.message ||
-        "Failed to create speaker";
+        err instanceof Error ? err.message : "Failed to create speaker";
       setError(message);
     } finally {
       setSubmitting(false);
