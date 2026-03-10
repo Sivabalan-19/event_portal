@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import { fetchData } from "@/utils/axios";
 import Link from "next/link";
 import { Input } from "@/components";
 import SectionTitle from "@/components/sectionTitle";
@@ -31,11 +31,11 @@ export default function FacultySpeakerPage() {
       try {
         setLoading(true);
         setError(null);
-        const response = await axios.get("http://localhost:3004/api/speakers/admin");
-        setSpeakers(response.data?.speakers ?? []);
-      } catch (err: any) {
-        console.error("Failed to load speakers", err);
-        setError(err?.message || "Failed to load speakers");
+        const response = await fetchData<{ speakers: Speaker[] }>("/speakers/admin");
+        setSpeakers(response.speakers ?? []);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to load speakers";
+        setError(message);
       } finally {
         setLoading(false);
       }
