@@ -338,33 +338,45 @@ export default function AdminEventReviewPage() {
                       className="mt-5 flex flex-wrap items-center gap-3"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <button
-                        type="button"
-                        onClick={() => applyStatus(event._id, "Approved")}
-                        className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
-                      >
-                        Approve Event
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFeedbackEventId(event._id);
-                          setFeedbackStatus("Needs Changes");
-                        }}
-                        className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-100"
-                      >
-                        Needs Changes
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFeedbackEventId(event._id);
-                          setFeedbackStatus("Rejected");
-                        }}
-                        className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-100"
-                      >
-                        Reject
-                      </button>
+                      {event.status !== "Approved" && (
+                        <button
+                          type="button"
+                          onClick={() => applyStatus(event._id, "Approved")}
+                          className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
+                        >
+                          Approve Event
+                        </button>
+                      )}
+                      {event.status !== "Approved" && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFeedbackEventId(event._id);
+                            setFeedbackStatus("Needs Changes");
+                          }}
+                          className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-100"
+                        >
+                          Needs Changes
+                        </button>
+                      )}
+                      {event.status !== "Approved" && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFeedbackEventId(event._id);
+                            setFeedbackStatus("Rejected");
+                          }}
+                          className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-100"
+                        >
+                          Reject
+                        </button>
+                      )}
+                      {event.status === "Approved" && (
+                        <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-700">
+                          <BsCheckCircle size={14} />
+                          Approved
+                        </span>
+                      )}
                     </div>
 
                     {isFeedbackOpen ? (

@@ -1,7 +1,7 @@
 "use client";
 
 import { RiDashboardLine } from "react-icons/ri";
-import { BsCalendar3 } from "react-icons/bs";
+import { BsCalendar3, BsGrid1X2 } from "react-icons/bs";
 import { TbClipboardList } from "react-icons/tb";
 import { LuLogOut } from "react-icons/lu";
 import { usePathname, useRouter } from "next/navigation";
@@ -49,19 +49,19 @@ export default function Sidebar() {
     <aside className="flex h-screen w-70 flex-col justify-between border-r border-gray-200 bg-white px-3 py-6 font-sans">
       <div>
         {/* User Profile */}
-        <div className="flex items-center gap-2.5 px-2 pb-6">
-          <img
-            src="https://i.pravatar.cc/40?img=47"
-            alt="Alex Johnson"
-            className="w-10 h-10 rounded-full object-cover"
-          />
-          <div>
-            <p className="text-sm font-semibold text-gray-900 leading-tight">
-              Alex Johnson
-            </p>
-            <p className="text-xs text-gray-500 leading-tight">
-              Computer Science
-            </p>
+        <div className="border-b border-slate-200 px-5 py-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-200">
+              <BsGrid1X2 size={16} />
+            </div>
+            <div>
+              <p className="text-lg font-bold leading-tight text-slate-900">
+                EduVent Portal
+              </p>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Admin Panel
+              </p>
+            </div>
           </div>
         </div>
 

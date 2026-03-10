@@ -6,9 +6,12 @@ import { useEffect, useMemo, useState } from "react";
 import { BsCalendar3, BsPeople, BsSearch } from "react-icons/bs";
 import { FiArrowLeft, FiClock, FiMapPin, FiTag, FiUsers } from "react-icons/fi";
 
+import { utils as xlsxUtils, writeFile as xlsxWriteFile } from "xlsx";
+
 import { Input } from "@/components";
 import SectionTitle from "@/components/sectionTitle";
 import { fetchData, patchData } from "@/utils/axios";
+import { BiDownload } from "react-icons/bi";
 
 type Speaker = {
   _id: string;
@@ -97,7 +100,9 @@ export default function FacultyEventDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [studentSearch, setStudentSearch] = useState("");
-  const [updatingRegistrationId, setUpdatingRegistrationId] = useState<string | null>(null);
+  const [updatingRegistrationId, setUpdatingRegistrationId] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     const eventId = params?.id;
@@ -156,11 +161,35 @@ export default function FacultyEventDetailPage() {
   const capacity = event?.maxAttendees ?? 0;
   const confirmedRegistrations = registrations.filter(
     (registration) =>
-      registration.status === "registered" || registration.status === "attended",
+      registration.status === "registered" ||
+      registration.status === "attended",
   ).length;
   const registeredCount = registrations.length;
   const capacityPercent =
     capacity > 0 ? Math.round((confirmedRegistrations / capacity) * 100) : 0;
+
+  const exportToExcel = () => {
+    const rows = filteredStudents.map((r) => ({
+      "Student Name": r.student.name,
+      "Roll No": r.student.rollNo || "-",
+      Department: r.student.department || "-",
+      Year: r.student.year || "-",
+      Email: r.student.email || "-",
+      Status:
+        r.status === "waitlisted"
+          ? `Waitlisted${r.waitlistPosition ? ` (#${r.waitlistPosition})` : ""}`
+          : r.status === "attended"
+            ? "Attended"
+            : "Registered",
+    }));
+
+    const worksheet = xlsxUtils.json_to_sheet(rows);
+    const workbook = xlsxUtils.book_new();
+    xlsxUtils.book_append_sheet(workbook, worksheet, "Registrations");
+
+    const safeTitle = (event?.title ?? "event").replace(/[^a-z0-9]/gi, "_");
+    xlsxWriteFile(workbook, `${safeTitle}_registrations.xlsx`);
+  };
 
   const updateAttendanceStatus = async (
     registrationId: string,
@@ -253,9 +282,13 @@ export default function FacultyEventDetailPage() {
         {shouldShowReviewNote(event.status) && event.reviewNote && (
           <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 shadow-sm shadow-rose-100/60">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
-              {event.status === "Rejected" ? "Reason For Rejection" : "Requested Changes"}
+              {event.status === "Rejected"
+                ? "Reason For Rejection"
+                : "Requested Changes"}
             </p>
-            <p className="mt-2 text-sm leading-7 text-rose-900">{event.reviewNote}</p>
+            <p className="mt-2 text-sm leading-7 text-rose-900">
+              {event.reviewNote}
+            </p>
           </div>
         )}
 
@@ -294,9 +327,12 @@ export default function FacultyEventDetailPage() {
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-200/70">
             <div className="space-y-6">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">Event Overview</h2>
+                <h2 className="text-lg font-bold text-slate-900">
+                  Event Overview
+                </h2>
                 <p className="mt-3 text-sm leading-7 text-slate-600">
-                  {event.description || "No description has been added for this event yet."}
+                  {event.description ||
+                    "No description has been added for this event yet."}
                 </p>
               </div>
 
@@ -340,7 +376,9 @@ export default function FacultyEventDetailPage() {
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                       Speakers
                     </p>
-                    <p className="mt-1 font-semibold text-slate-900">{speakerNames}</p>
+                    <p className="mt-1 font-semibold text-slate-900">
+                      {speakerNames}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -353,7 +391,9 @@ export default function FacultyEventDetailPage() {
                 <FiTag size={18} />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-slate-900">Event Snapshot</h2>
+                <h2 className="text-lg font-bold text-slate-900">
+                  Event Snapshot
+                </h2>
                 <p className="text-sm text-slate-500">
                   Quick summary of the current event configuration.
                 </p>
@@ -364,7 +404,9 @@ export default function FacultyEventDetailPage() {
               <div className="rounded-2xl bg-slate-50 p-4">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-500">Filled Capacity</span>
-                  <span className="font-semibold text-slate-900">{capacityPercent}%</span>
+                  <span className="font-semibold text-slate-900">
+                    {capacityPercent}%
+                  </span>
                 </div>
                 <div className="mt-3 h-3 rounded-full bg-slate-200">
                   <div
@@ -401,9 +443,12 @@ export default function FacultyEventDetailPage() {
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-5">
             <div>
-              <h2 className="text-lg font-bold text-slate-900">Registered Students</h2>
+              <h2 className="text-lg font-bold text-slate-900">
+                Registered Students
+              </h2>
               <p className="text-sm text-slate-500">
-                Students who registered for this specific event are listed below.
+                Students who registered for this specific event are listed
+                below.
               </p>
             </div>
             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
@@ -421,6 +466,18 @@ export default function FacultyEventDetailPage() {
                 <BsPeople size={13} />
                 {filteredStudents.length} Students
               </span>
+              {registrations.length > 0 && (
+                <button
+                  type="button"
+                  onClick={exportToExcel}
+                  className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-100"
+                >
+                  <span>
+                    <BiDownload />
+                  </span>
+                  Export Excel
+                </button>
+              )}
             </div>
           </div>
 
@@ -473,7 +530,9 @@ export default function FacultyEventDetailPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-slate-600">
-                        {new Date(registration.registeredAt).toLocaleDateString()}
+                        {new Date(
+                          registration.registeredAt,
+                        ).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
                         {registration.status === "waitlisted" ? (
@@ -483,7 +542,9 @@ export default function FacultyEventDetailPage() {
                         ) : (
                           <button
                             type="button"
-                            disabled={updatingRegistrationId === registration._id}
+                            disabled={
+                              updatingRegistrationId === registration._id
+                            }
                             onClick={() =>
                               updateAttendanceStatus(
                                 registration._id,
@@ -513,7 +574,9 @@ export default function FacultyEventDetailPage() {
             </div>
           ) : (
             <div className="px-6 py-10 text-center">
-              <p className="text-sm font-semibold text-slate-700">No registrations found.</p>
+              <p className="text-sm font-semibold text-slate-700">
+                No registrations found.
+              </p>
               <p className="mt-1 text-sm text-slate-500">
                 Students will appear here once they register for this event.
               </p>

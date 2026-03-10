@@ -1,6 +1,6 @@
 "use client";
 
-import { BsCalendar3, BsMic } from "react-icons/bs";
+import { BsCalendar3, BsGrid1X2, BsMic } from "react-icons/bs";
 import { LuLogOut } from "react-icons/lu";
 import { RiDashboardLine } from "react-icons/ri";
 import { usePathname, useRouter } from "next/navigation";
@@ -51,19 +51,19 @@ export default function FacultySidebar() {
   return (
     <aside className="flex h-screen w-70 flex-col justify-between border-r border-gray-200 bg-white px-3 py-6 font-sans">
       <div>
-        <div className="flex items-center gap-2.5 px-2 pb-6">
-          <img
-            src="https://i.pravatar.cc/40?img=12"
-            alt="Dr. Emily Carter"
-            className="h-10 w-10 rounded-full object-cover"
-          />
-          <div>
-            <p className="text-sm font-semibold leading-tight text-gray-900">
-              Dr. Emily Carter
-            </p>
-            <p className="text-xs leading-tight text-gray-500">
-              Faculty Coordinator
-            </p>
+        <div className="border-b border-slate-200 px-5 py-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-200">
+              <BsGrid1X2 size={16} />
+            </div>
+            <div>
+              <p className="text-lg font-bold leading-tight text-slate-900">
+                EduVent Portal
+              </p>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                Admin Panel
+              </p>
+            </div>
           </div>
         </div>
 

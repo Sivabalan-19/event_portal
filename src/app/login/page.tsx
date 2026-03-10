@@ -213,6 +213,16 @@ function Page() {
                 </span>
               </div>
 
+              <p className="text-center text-sm text-slate-500">
+                Don&apos;t have an account?{" "}
+                <a
+                  href="/register"
+                  className="text-blue-600 font-semibold hover:underline"
+                >
+                  Register
+                </a>
+              </p>
+
               {/* SSO */}
               <button className="flex items-center justify-center gap-3 w-full py-3.5 px-4 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700">
                 <img
