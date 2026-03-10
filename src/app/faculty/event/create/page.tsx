@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components";
 import {
   FiArrowLeft,
@@ -9,9 +9,9 @@ import {
   FiCalendar,
   FiImage,
   FiInfo,
+  FiLink,
   FiMapPin,
   FiMic,
-  FiUploadCloud,
   FiUsers,
   FiX,
 } from "react-icons/fi";
@@ -52,7 +52,6 @@ function FormSection({ icon, title, children }: FormSectionProps) {
 }
 
 export default function CreateEventPage() {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [speakerOptions, setSpeakerOptions] = useState<SpeakerOption[]>([]);
   const [form, setForm] = useState({
     eventName: "",
@@ -66,7 +65,7 @@ export default function CreateEventPage() {
   });
   const [selectedSpeakers, setSelectedSpeakers] = useState<string[]>([]);
   const [speakerSearch, setSpeakerSearch] = useState("");
-  const [coverImageName, setCoverImageName] = useState("");
+  const [coverImageUrl, setCoverImageUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -135,7 +134,7 @@ export default function CreateEventPage() {
           venue: string;
           mode: "online" | "offline" | "hybrid";
           speakers: string[];
-          coverImageName: string;
+          coverImageUrl: string;
         }
       >("/events/create", {
         title: form.eventName,
@@ -147,7 +146,7 @@ export default function CreateEventPage() {
         venue: form.venue,
         mode: form.mode,
         speakers: selectedSpeakers,
-        coverImageName,
+        coverImageUrl,
       });
 
       setSuccess("Event created successfully and sent for review");
@@ -163,7 +162,7 @@ export default function CreateEventPage() {
       });
       setSelectedSpeakers([]);
       setSpeakerSearch("");
-      setCoverImageName("");
+      setCoverImageUrl("");
     } catch (err: any) {
       const message =
         err?.response?.data?.error ||
@@ -424,37 +423,37 @@ export default function CreateEventPage() {
 
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-slate-700">
-                Cover Image
+                Cover Image URL
               </label>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const selectedFile = e.target.files?.[0];
-                  setCoverImageName(selectedFile?.name ?? "");
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex min-h-52 w-full flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center transition-colors hover:border-blue-300 hover:bg-blue-50/40"
-              >
-                <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-                  {coverImageName ? (
-                    <FiImage size={22} />
-                  ) : (
-                    <FiUploadCloud size={22} />
-                  )}
-                </span>
-                <span className="text-sm font-semibold text-slate-700">
-                  {coverImageName || "Click to upload or drag and drop"}
-                </span>
-                <span className="mt-1 text-xs text-slate-400">
-                  Recommended size: 1200 x 630 PNG, JPG, Max 5MB
-                </span>
-              </button>
+              <div className="space-y-3">
+                <Input
+                  id="cover-image-url"
+                  label=""
+                  type="url"
+                  value={coverImageUrl}
+                  onChange={(e) => setCoverImageUrl(e.target.value)}
+                  placeholder="https://example.com/event-banner.jpg"
+                  icon={<FiLink size={18} className="text-slate-400" />}
+                />
+                {coverImageUrl && (
+                  <div className="overflow-hidden rounded-xl border border-slate-200">
+                    <img
+                      src={coverImageUrl}
+                      alt="Cover preview"
+                      className="h-48 w-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
+                {!coverImageUrl && (
+                  <div className="flex min-h-28 w-full flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-center">
+                    <FiImage size={22} className="mb-2 text-slate-300" />
+                    <span className="text-xs text-slate-400">Image preview will appear here</span>
+                  </div>
+                )}
+              </div>
             </div>
           </FormSection>
 

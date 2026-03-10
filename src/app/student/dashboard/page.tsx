@@ -21,7 +21,7 @@ type EventRecord = {
   date?: string;
   venue?: string;
   speakers?: Speaker[];
-  coverImageName?: string;
+  coverImageUrl?: string;
 };
 
 type RegistrationRecord = {
@@ -128,13 +128,15 @@ export default function DashboardPage() {
     ];
   }, [registrations, upcomingRegistrations.length]);
 
+
+
   const eventCards = useMemo(
     () =>
       upcomingRegistrations.map((registration) => {
         const formattedDate = formatEventDate(registration.event.date);
 
         return {
-          image: FALLBACK_EVENT_IMAGE,
+          image: registration.event.coverImageUrl || FALLBACK_EVENT_IMAGE,
           month: formattedDate.month,
           day: formattedDate.day,
           tag: (registration.event.category || "Event").toUpperCase(),

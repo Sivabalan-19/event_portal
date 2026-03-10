@@ -28,6 +28,7 @@ type EventDetail = {
   description?: string;
   maxAttendees?: number;
   registrationCount?: number;
+  coverImageUrl?: string;
   speakers?: Speaker[];
   createdBy?: {
     name?: string;
@@ -314,7 +315,7 @@ export default function EventDetailsReviewPage() {
 
         <div className="relative mx-4 h-100 overflow-hidden rounded-xl">
           <img
-            src={FALLBACK_EVENT_IMAGE}
+            src={event.coverImageUrl || FALLBACK_EVENT_IMAGE}
             alt={event.title}
             className="h-full w-full object-cover"
           />

@@ -14,7 +14,7 @@ type FacultyDashboardEvent = {
   category?: string;
   date?: string;
   venue?: string;
-  coverImageName?: string;
+  coverImageUrl?: string;
   status?: "Pending" | "Approved" | "Needs Changes" | "Rejected";
   speakers?: Array<{ _id: string; name: string }>;
 };
@@ -121,7 +121,7 @@ export default function DashboardPage() {
 
         return {
           id: event._id,
-          image: FALLBACK_EVENT_IMAGE,
+          image: event.coverImageUrl || FALLBACK_EVENT_IMAGE,
           month: formattedDate.month,
           day: formattedDate.day,
           tag: (event.category || "Event").toUpperCase(),
@@ -144,11 +144,11 @@ export default function DashboardPage() {
         description="Review the events you created, track approval progress, and keep an eye on what is coming up next."
       />
 
-      <div className="flex gap-4 mt-7 mb-9 flex-wrap">
+      <div className="flex gap-6 mt-7 mb-9 flex-wrap justify-between">
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="flex flex-1 min-w-[160px] items-center gap-3.5 bg-white border border-gray-200 rounded-xl px-6 py-6.5"
+            className="flex flex-1 w-full min-w-40 items-center gap-3.5 bg-white border border-gray-200 rounded-xl px-6 py-6.5"
           >
             <div
               className={`w-11 h-11 rounded-xl ${stat.iconBg} flex items-center justify-center shrink-0`}
@@ -176,7 +176,7 @@ export default function DashboardPage() {
           Loading your events...
         </div>
       ) : eventCards.length > 0 ? (
-        <div className="flex w-full gap-4 justify-start flex-wrap">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-5">
           {eventCards.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}

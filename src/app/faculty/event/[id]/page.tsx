@@ -34,6 +34,7 @@ type EventRecord = {
   speakers?: Speaker[];
   createdAt?: string;
   reviewNote?: string;
+  coverImageUrl?: string;
 };
 
 type EventResponse = {
@@ -278,6 +279,17 @@ export default function FacultyEventDetailPage() {
           title={event.title}
           description="Review the full event plan and the latest information saved for this event."
         />
+
+        {event.coverImageUrl && (
+          <div className="h-64 w-full overflow-hidden rounded-2xl">
+            <img
+              src={event.coverImageUrl}
+              alt={event.title}
+              className="h-full w-full object-cover"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            />
+          </div>
+        )}
 
         {shouldShowReviewNote(event.status) && event.reviewNote && (
           <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 shadow-sm shadow-rose-100/60">

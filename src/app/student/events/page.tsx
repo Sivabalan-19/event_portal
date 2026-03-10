@@ -23,7 +23,7 @@ type EventRecord = {
   date?: string;
   venue?: string;
   speakers?: Speaker[];
-  coverImageName?: string;
+  coverImageUrl?: string;
 };
 
 const filters = [
@@ -133,7 +133,7 @@ export default function AllEventsPage() {
         const formattedDate = formatEventDate(event.date);
 
         return {
-          image: FALLBACK_EVENT_IMAGE,
+          image: event.coverImageUrl || FALLBACK_EVENT_IMAGE,
           month: formattedDate.month,
           day: formattedDate.day,
           tag: (event.category || "Event").toUpperCase(),

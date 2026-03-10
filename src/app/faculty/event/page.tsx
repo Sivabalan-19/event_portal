@@ -27,6 +27,7 @@ type FacultyEvent = {
   description?: string;
   mode?: "online" | "offline" | "hybrid";
   reviewNote?: string;
+  coverImageUrl?: string;
 };
 
 function shouldShowReviewNote(status?: FacultyEvent["status"]) {
@@ -65,7 +66,9 @@ export default function FacultyEventPage() {
     const loadEvents = async () => {
       try {
         setIsLoading(true);
-        const response = await fetchData<{ events: FacultyEvent[] }>("/events/mine");
+        const response = await fetchData<{ events: FacultyEvent[] }>(
+          "/events/mine",
+        );
         setEvents(response.events ?? []);
         setError(null);
       } catch (err) {
@@ -105,7 +108,9 @@ export default function FacultyEventPage() {
     });
   }, [events, searchTerm]);
 
-  const approvedCount = events.filter((event) => event.status === "Approved").length;
+  const approvedCount = events.filter(
+    (event) => event.status === "Approved",
+  ).length;
   const pendingCount = events.filter(
     (event) => event.status === "Pending" || event.status === "Needs Changes",
   ).length;
@@ -180,75 +185,80 @@ export default function FacultyEventPage() {
             {filteredEvents.map((event) => (
               <article
                 key={event._id}
-                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-200/70 transition-transform duration-150 hover:-translate-y-0.5"
+                className="rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70 transition-transform duration-150 hover:-translate-y-0.5 overflow-hidden"
               >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${getCategoryStyle(event.category)}`}
-                      >
-                        {event.category ?? "Uncategorized"}
-                      </span>
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusStyle(event.status)}`}
-                      >
-                        {event.status ?? "Unknown"}
+                <div className="p-6">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${getCategoryStyle(event.category)}`}
+                        >
+                          {event.category ?? "Uncategorized"}
+                        </span>
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusStyle(event.status)}`}
+                        >
+                          {event.status ?? "Unknown"}
+                        </span>
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold tracking-tight text-slate-900">
+                          {event.title}
+                        </h3>
+                        <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
+                          {event.description ||
+                            "No description has been added for this event yet."}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl bg-slate-50 px-4 py-3 text-right text-sm font-semibold text-slate-700">
+                      <span>{event.date || "TBD"}</span>
+                    </div>
+                  </div>
+                  <div className="mt-5 grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
+                    <div className="flex items-center gap-2">
+                      <FiClock size={14} className="text-slate-400" />
+                      <span>{event.time || "Time to be announced"}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiMapPin size={14} className="text-slate-400" />
+                      <span>{event.venue || "Venue to be announced"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 sm:col-span-2">
+                      <FiUsers size={14} className="text-slate-400" />
+                      <span>
+                        {event.speakers
+                          ?.map((speaker) => speaker.name)
+                          .join(", ") || "Speaker to be announced"}
                       </span>
                     </div>
-                    <div>
-                      <h3 className="text-2xl font-bold tracking-tight text-slate-900">
-                        {event.title}
-                      </h3>
-                      <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
-                        {event.description || "No description has been added for this event yet."}
+                  </div>
+                  {shouldShowReviewNote(event.status) && event.reviewNote && (
+                    <div className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
+                        {event.status === "Rejected"
+                          ? "Reason For Rejection"
+                          : "Requested Changes"}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-rose-800">
+                        {event.reviewNote}
                       </p>
                     </div>
-                  </div>
-
-                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-right text-sm font-semibold text-slate-700">
-                    <span>{event.date || "TBD"}</span>
-                  </div>
-                </div>
-
-                <div className="mt-5 grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
-                  <div className="flex items-center gap-2">
-                    <FiClock size={14} className="text-slate-400" />
-                    <span>{event.time || "Time to be announced"}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FiMapPin size={14} className="text-slate-400" />
-                    <span>{event.venue || "Venue to be announced"}</span>
-                  </div>
-                  <div className="flex items-center gap-2 sm:col-span-2">
-                    <FiUsers size={14} className="text-slate-400" />
-                    <span>
-                      {event.speakers?.map((speaker) => speaker.name).join(", ") ||
-                        "Speaker to be announced"}
-                    </span>
-                  </div>
-                </div>
-
-                {shouldShowReviewNote(event.status) && event.reviewNote && (
-                  <div className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
-                      {event.status === "Rejected" ? "Reason For Rejection" : "Requested Changes"}
+                  )}
+                  <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-slate-500">
+                      Pending review: {pendingCount}
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-rose-800">{event.reviewNote}</p>
-                  </div>
-                )}
-
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-slate-500">
-                    Pending review: {pendingCount}
-                  </p>
-                  <Link
-                    href={`/faculty/event/${event._id}`}
-                    className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
-                  >
-                    View Details
-                  </Link>
-                </div>
+                    <Link
+                      href={`/faculty/event/${event._id}`}
+                      className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
+                    >
+                      View Details
+                    </Link>
+                  </div>{" "}
+                </div>{" "}
               </article>
             ))}
           </div>

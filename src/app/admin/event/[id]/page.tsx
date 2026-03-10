@@ -31,7 +31,7 @@ type AdminEventDetail = {
   status?: ReviewStatus;
   description?: string;
   reviewNote?: string;
-  coverImageName?: string;
+  coverImageUrl?: string;
   registrationCount?: number;
   createdAt?: string;
   createdBy?: {
@@ -278,7 +278,7 @@ export default function AdminEventDetailsPage() {
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm shadow-slate-200/70">
           <div className="relative h-72 w-full overflow-hidden bg-slate-200">
             <img
-              src={FALLBACK_EVENT_IMAGE}
+              src={event?.coverImageUrl || FALLBACK_EVENT_IMAGE}
               alt={event.title}
               className="h-full w-full object-cover"
             />

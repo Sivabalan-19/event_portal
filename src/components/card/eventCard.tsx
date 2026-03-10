@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { MdLocationOn, MdPerson } from "react-icons/md";
 
 type EventCardProps = {
@@ -14,6 +15,8 @@ type EventCardProps = {
   onDetails?: () => void;
 };
 
+const FALLBACK_IMAGE = "https://placehold.co/600x360/e2e8f0/0f172a?text=Campus+Event";
+
 const tagColors: Record<string, string> = {
   TECHNICAL: "text-blue-600 bg-blue-600",
   CULTURAL: "text-orange-500 bg-orange-500",
@@ -24,19 +27,21 @@ const tagColors: Record<string, string> = {
 };
 
 export default function EventCard({ event }: { event: EventCardProps }) {
+  const [imgSrc, setImgSrc] = useState(event.image || FALLBACK_IMAGE);
   const [dateTextClass, tagBgClass] = (tagColors[event.tag] || tagColors.EVENT).split(" ");
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col">
+    <div className="bg-white  min-w-80 rounded-xl border border-gray-200 overflow-hidden flex flex-col">
       {/* Image */}
       <div className="relative h-44">
         <img
-          src={event.image}
+          src={imgSrc}
           alt={event.title}
           className="w-full h-full object-cover"
+          onError={() => setImgSrc(FALLBACK_IMAGE)}
         />
         {/* Date Badge */}
-        <div className="absolute top-3 left-3 bg-white rounded-lg text-center px-2 py-2 shadow-sm min-w-[42px]">
+        <div className="absolute top-3 left-3 bg-white rounded-lg text-center px-2 py-2 shadow-sm min-w-10.5">
           <p className={`text-[10px] font-bold uppercase leading-none ${dateTextClass}`}>
             {event.month}
           </p>
