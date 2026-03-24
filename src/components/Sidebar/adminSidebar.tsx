@@ -27,11 +27,6 @@ const navItems: NavItem[] = [
     icon: <BsCalendar3 size={16} />,
     href: "/admin/event",
   },
-  {
-    label: "Settings",
-    icon: <LuSettings size={16} />,
-    href: "/admin/settings",
-  },
 ];
 
 export default function AdminSidebar() {
@@ -62,7 +57,7 @@ export default function AdminSidebar() {
             </div>
             <div>
               <p className="text-lg font-bold leading-tight text-slate-900">
-               CampusConnect
+                CampusConnect
               </p>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
                 Admin Panel
@@ -97,27 +92,14 @@ export default function AdminSidebar() {
       </div>
 
       <div className="border-t border-slate-200 px-5 py-5">
-        <div className="flex items-center gap-3">
-          <img
-            src="https://i.pravatar.cc/48?img=15"
-            alt="Alex Johnson"
-            className="h-11 w-11 rounded-full object-cover"
-          />
-          <div className="min-w-0">
-            <p className="truncate text-sm font-bold text-slate-900">
-              Alex Johnson
-            </p>
-            <p className="text-xs font-medium text-slate-500">Super Admin</p>
-          </div>
-          <button
-            type="button"
-            aria-label="Logout"
-            onClick={handleLogout}
-            className="ml-auto text-slate-400 transition-colors hover:text-slate-600"
-          >
-            <LuLogOut size={16} />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="flex items-center justify-center gap-2 w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-150"
+        >
+          <LuLogOut size={16} />
+          Logout
+        </button>
       </div>
     </aside>
   );

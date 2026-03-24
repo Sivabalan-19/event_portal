@@ -46,6 +46,11 @@ type Registration = {
   status: "registered" | "waitlisted" | "attended" | "cancelled";
   waitlistPosition?: number;
   registeredAt: string;
+  feedback?: {
+    rating?: number;
+    comment?: string;
+    submittedAt?: string;
+  };
   student: {
     _id: string;
     name: string;
@@ -182,6 +187,11 @@ export default function FacultyEventDetailPage() {
           : r.status === "attended"
             ? "Attended"
             : "Registered",
+      "Feedback Rating": r.feedback?.rating ?? "-",
+      Feedback: r.feedback?.comment || "-",
+      "Feedback Submitted On": r.feedback?.submittedAt
+        ? new Date(r.feedback.submittedAt).toLocaleDateString()
+        : "-",
     }));
 
     const worksheet = xlsxUtils.json_to_sheet(rows);
@@ -267,12 +277,6 @@ export default function FacultyEventDetailPage() {
             <FiArrowLeft size={16} />
             Back to Events
           </Link>
-          <Link
-            href="/faculty/event/create"
-            className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-          >
-            Edit Event
-          </Link>
         </div>
 
         <SectionTitle
@@ -286,7 +290,9 @@ export default function FacultyEventDetailPage() {
               src={event.coverImageUrl}
               alt={event.title}
               className="h-full w-full object-cover"
-              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = "none";
+              }}
             />
           </div>
         )}
@@ -504,6 +510,7 @@ export default function FacultyEventDetailPage() {
                     <th className="px-6 py-4">Year</th>
                     <th className="px-6 py-4">Email</th>
                     <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Feedback</th>
                     <th className="px-6 py-4">Registered On</th>
                     <th className="px-6 py-4">Action</th>
                   </tr>
@@ -541,6 +548,20 @@ export default function FacultyEventDetailPage() {
                               : "Registered"}
                         </span>
                       </td>
+                        <td className="px-6 py-4 text-slate-600">
+                          {registration.feedback?.rating ? (
+                            <div>
+                              <p className="font-semibold text-slate-800">
+                                {registration.feedback.rating}/5
+                              </p>
+                              <p className="max-w-52 truncate text-xs text-slate-500">
+                                {registration.feedback.comment || "No comment"}
+                              </p>
+                            </div>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
                       <td className="px-6 py-4 text-slate-600">
                         {new Date(
                           registration.registeredAt,
@@ -565,9 +586,9 @@ export default function FacultyEventDetailPage() {
                                   : "attended",
                               )
                             }
-                            className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                            className={`rounded-lg px-3 text-nowrap py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
                               registration.status === "attended"
-                                ? "border border-blue-200 bg-white text-blue-600 hover:bg-blue-50"
+                                ? "border border-blue-200  bg-white text-blue-600 hover:bg-blue-50"
                                 : "bg-blue-600 text-white hover:bg-blue-700"
                             }`}
                           >

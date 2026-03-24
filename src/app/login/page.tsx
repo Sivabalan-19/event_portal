@@ -34,7 +34,8 @@ function Page() {
       const role = getRoleFromToken(response.token);
 
       if (role) {
-        router.replace(getDefaultRouteForRole(role));
+        router.replace(
+          getDefaultRouteForRole(role));
       }
     } catch {
     }

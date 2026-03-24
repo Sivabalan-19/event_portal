@@ -7,7 +7,7 @@ import { FiCompass } from "react-icons/fi";
 
 import { Input, RegistrationCard } from "@/components";
 import SectionTitle from "@/components/sectionTitle";
-import { fetchData } from "@/utils/axios";
+import { fetchData, patchData } from "@/utils/axios";
 
 type RegistrationTab = "upcoming" | "past" | "waitlisted";
 
@@ -26,12 +26,19 @@ type EventRecord = {
   coverImageUrl?: string;
 };
 
+type RegistrationFeedback = {
+  rating: number;
+  comment?: string;
+  submittedAt?: string;
+};
+
 type RegistrationItem = {
   _id: string;
   status: "registered" | "waitlisted" | "attended" | "cancelled";
   waitlistPosition?: number;
   tab: RegistrationTab;
   createdAt: string;
+  feedback?: RegistrationFeedback;
   event: EventRecord;
 };
 
@@ -58,6 +65,12 @@ export default function StudentRegistrationsPage() {
   const [registrations, setRegistrations] = useState<RegistrationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [feedbackForm, setFeedbackForm] = useState<{ rating: number; comment: string }>({
+    rating: 5,
+    comment: "",
+  });
+  const [activeFeedbackRegistrationId, setActiveFeedbackRegistrationId] = useState<string | null>(null);
+  const [submittingFeedbackId, setSubmittingFeedbackId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadRegistrations = async () => {
@@ -112,6 +125,44 @@ export default function StudentRegistrationsPage() {
       return matchesTab && matchesSearch;
     });
   }, [activeTab, registrations, searchTerm]);
+
+  const openFeedbackForm = (registration: RegistrationItem) => {
+    setActiveFeedbackRegistrationId(registration._id);
+    setFeedbackForm({
+      rating: registration.feedback?.rating ?? 5,
+      comment: registration.feedback?.comment ?? "",
+    });
+    setError(null);
+  };
+
+  const submitFeedback = async (registrationId: string) => {
+    try {
+      setSubmittingFeedbackId(registrationId);
+      const response = await patchData<
+        { registrationId: string; feedback: RegistrationFeedback },
+        { rating: number; comment: string }
+      >(`/registrations/${registrationId}/feedback`, {
+        rating: feedbackForm.rating,
+        comment: feedbackForm.comment,
+      });
+
+      setRegistrations((current) =>
+        current.map((registration) =>
+          registration._id === response.registrationId
+            ? { ...registration, feedback: response.feedback }
+            : registration,
+        ),
+      );
+      setActiveFeedbackRegistrationId(null);
+      setError(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to submit feedback";
+      setError(message);
+    } finally {
+      setSubmittingFeedbackId(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-100 px-6 py-8 font-sans">
@@ -178,24 +229,113 @@ export default function StudentRegistrationsPage() {
         ) : filteredRegistrations.length > 0 ? (
           <div className="grid grid-cols-2 gap-5 2xl:grid-cols-2">
             {filteredRegistrations.map((registration) => (
-              <RegistrationCard
-                key={registration._id}
-                eventId={registration.event._id}
-                image={registration.event.coverImageUrl || FALLBACK_EVENT_IMAGE}
-                title={registration.event.title}
-                reference={buildReference(registration._id)}
-                date={registration.event.date || "Date to be announced"}
-                time={registration.event.time || "Time to be announced"}
-                location={registration.event.venue || "Venue to be announced"}
-                status={formatRegistrationStatus(registration.status)}
-                waitlistPosition={registration.waitlistPosition}
-                primaryActionLabel={
-                  registration.tab === "past" ? "View Summary" : "View Event"
-                }
-                secondaryActionLabel={
-                  registration.status === "waitlisted" ? "Cancel Request" : undefined
-                }
-              />
+              <div key={registration._id} className="space-y-3">
+                <RegistrationCard
+                  eventId={registration.event._id}
+                  image={registration.event.coverImageUrl || FALLBACK_EVENT_IMAGE}
+                  title={registration.event.title}
+                  reference={buildReference(registration._id)}
+                  date={registration.event.date || "Date to be announced"}
+                  time={registration.event.time || "Time to be announced"}
+                  location={registration.event.venue || "Venue to be announced"}
+                  status={formatRegistrationStatus(registration.status)}
+                  waitlistPosition={registration.waitlistPosition}
+                  primaryActionLabel={
+                    registration.tab === "past" ? "View Summary" : "View Event"
+                  }
+                  secondaryActionLabel={
+                    registration.status === "waitlisted" ? "Cancel Request" : undefined
+                  }
+                />
+
+                {registration.tab === "past" && registration.status !== "waitlisted" && (
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-slate-900">
+                        Event Feedback
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => openFeedbackForm(registration)}
+                        className="rounded-lg border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50"
+                      >
+                        {registration.feedback ? "Edit Feedback" : "Give Feedback"}
+                      </button>
+                    </div>
+
+                    {registration.feedback && (
+                      <p className="mt-2 text-xs text-slate-600">
+                        Submitted {registration.feedback.rating}/5
+                        {registration.feedback.comment
+                          ? ` - ${registration.feedback.comment}`
+                          : ""}
+                      </p>
+                    )}
+
+                    {activeFeedbackRegistrationId === registration._id && (
+                      <div className="mt-3 space-y-3">
+                        <div>
+                          <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+                            Rating
+                          </label>
+                          <select
+                            value={feedbackForm.rating}
+                            onChange={(e) =>
+                              setFeedbackForm((current) => ({
+                                ...current,
+                                rating: Number(e.target.value),
+                              }))
+                            }
+                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none"
+                          >
+                            {[5, 4, 3, 2, 1].map((rating) => (
+                              <option key={rating} value={rating}>
+                                {rating} / 5
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+                            Comment
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={feedbackForm.comment}
+                            onChange={(e) =>
+                              setFeedbackForm((current) => ({
+                                ...current,
+                                comment: e.target.value,
+                              }))
+                            }
+                            placeholder="Share your event experience"
+                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none"
+                          />
+                        </div>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setActiveFeedbackRegistrationId(null)}
+                            className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => submitFeedback(registration._id)}
+                            disabled={submittingFeedbackId === registration._id}
+                            className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {submittingFeedbackId === registration._id
+                              ? "Saving..."
+                              : "Submit Feedback"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             ))}
 
             <div className="flex min-h-41 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-6 text-center">
