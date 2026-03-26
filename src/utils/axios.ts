@@ -1,6 +1,6 @@
 import axios, { AxiosHeaders, AxiosRequestConfig } from "axios";
 
-const API_BASE_URL = process.env.BASE_URL ?? "https://event-portal-server.vercel.app/api";
+const API_BASE_URL = process.env.BASE_URL ?? "http://localhost:3004/api";
 const AUTH_TOKEN_KEY = "token";
 
 function getStoredToken(): string | null {

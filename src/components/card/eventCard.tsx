@@ -31,7 +31,7 @@ export default function EventCard({ event }: { event: EventCardProps }) {
   const [dateTextClass, tagBgClass] = (tagColors[event.tag] || tagColors.EVENT).split(" ");
 
   return (
-    <div className="bg-white  min-w-80 rounded-xl border border-gray-200 overflow-hidden flex flex-col">
+    <div className="flex w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white">
       {/* Image */}
       <div className="relative h-44">
         <img
