@@ -112,7 +112,9 @@ export default function CreateEventPage() {
   useEffect(() => {
     const fetchSpeakers = async () => {
       try {
-        const data = await fetchData<{ speakers: SpeakerOption[] }>("/speakers");
+        const data = await fetchData<{ speakers: SpeakerOption[] }>(
+          "/speakers",
+        );
         setSpeakerOptions(data.speakers ?? []);
       } catch (error) {
         console.error("Failed to load speakers", error);
@@ -159,14 +161,14 @@ export default function CreateEventPage() {
         date: form.date,
         time: form.time,
         venue: form.venue,
-        registrationOpenAt: buildDateTime(
-          form.registrationOpenDate,
-          form.registrationOpenTime,
-        ) || undefined,
-        registrationCloseAt: buildDateTime(
-          form.registrationCloseDate,
-          form.registrationCloseTime,
-        ) || undefined,
+        registrationOpenAt:
+          buildDateTime(form.registrationOpenDate, form.registrationOpenTime) ||
+          undefined,
+        registrationCloseAt:
+          buildDateTime(
+            form.registrationCloseDate,
+            form.registrationCloseTime,
+          ) || undefined,
         mode: form.mode,
         speakers: selectedSpeakers,
         coverImageUrl,
@@ -192,9 +194,7 @@ export default function CreateEventPage() {
       setCoverImageUrl("");
     } catch (err: any) {
       const message =
-        err?.response?.data?.error ||
-        err?.message ||
-        "Failed to create event";
+        err?.response?.data?.error || err?.message || "Failed to create event";
       setError(message);
     } finally {
       setSubmitting(false);
@@ -386,34 +386,47 @@ export default function CreateEventPage() {
                 label="Registration Opens (Date)"
                 type="date"
                 value={form.registrationOpenDate}
-                onChange={(e) => updateForm("registrationOpenDate", e.target.value)}
+                placeholder="mm/dd/yyyy"
+                onChange={(e) =>
+                  updateForm("registrationOpenDate", e.target.value)
+                }
               />
               <Input
                 id="registration-open-time"
+                placeholder="09:00 PM"
                 label="Registration Opens (Time)"
                 type="time"
                 value={form.registrationOpenTime}
-                onChange={(e) => updateForm("registrationOpenTime", e.target.value)}
+                onChange={(e) =>
+                  updateForm("registrationOpenTime", e.target.value)
+                }
               />
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <Input
+                placeholder="mm/dd/yyyy"
                 id="registration-close-date"
                 label="Registration Closes (Date)"
                 type="date"
                 value={form.registrationCloseDate}
-                onChange={(e) => updateForm("registrationCloseDate", e.target.value)}
+                onChange={(e) =>
+                  updateForm("registrationCloseDate", e.target.value)
+                }
               />
               <Input
                 id="registration-close-time"
                 label="Registration Closes (Time)"
+                placeholder="09:00 PM"
                 type="time"
                 value={form.registrationCloseTime}
-                onChange={(e) => updateForm("registrationCloseTime", e.target.value)}
+                onChange={(e) =>
+                  updateForm("registrationCloseTime", e.target.value)
+                }
               />
             </div>
             <p className="text-xs text-slate-500">
-              Students can register only during this window. Leave all fields empty to keep registration always open.
+              Students can register only during this window. Leave all fields
+              empty to keep registration always open.
             </p>
           </FormSection>
 
@@ -424,7 +437,9 @@ export default function CreateEventPage() {
               </label>
               <div className="flex flex-wrap gap-2">
                 {selectedSpeakers.map((speakerId) => {
-                  const speaker = speakerOptions.find((s) => s._id === speakerId);
+                  const speaker = speakerOptions.find(
+                    (s) => s._id === speakerId,
+                  );
                   if (!speaker) return null;
 
                   return (
@@ -466,7 +481,9 @@ export default function CreateEventPage() {
                 <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs">
                   {filteredSpeakerOptions.length === 0 && (
                     <div className="py-1 text-slate-400">
-                      {speakerSearch ? "No speakers match your search." : "No speakers available."}
+                      {speakerSearch
+                        ? "No speakers match your search."
+                        : "No speakers available."}
                     </div>
                   )}
                   {filteredSpeakerOptions.map((speaker) => (
@@ -515,7 +532,9 @@ export default function CreateEventPage() {
                 {!coverImageUrl && (
                   <div className="flex min-h-28 w-full flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-center">
                     <FiImage size={22} className="mb-2 text-slate-300" />
-                    <span className="text-xs text-slate-400">Image preview will appear here</span>
+                    <span className="text-xs text-slate-400">
+                      Image preview will appear here
+                    </span>
                   </div>
                 )}
               </div>
