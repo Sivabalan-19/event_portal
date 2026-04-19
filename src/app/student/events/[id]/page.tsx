@@ -28,6 +28,8 @@ type EventDetail = {
   description?: string;
   maxAttendees?: number;
   registrationCount?: number;
+  registrationOpenAt?: string;
+  registrationCloseAt?: string;
   coverImageUrl?: string;
   speakers?: Speaker[];
   createdBy?: {
@@ -73,6 +75,25 @@ function formatSpeakerNames(speakers?: Speaker[]) {
   }
 
   return speakers.map((speaker) => speaker.name).join(", ");
+}
+
+function formatDateTime(value?: string) {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return parsed.toLocaleString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function buildTopics(event: EventDetail) {
@@ -207,11 +228,33 @@ export default function EventDetailsReviewPage() {
     return "Register";
   }, [isSubmitting, registrationStatus, waitlistPosition]);
 
+  const registrationWindowStatus = useMemo(() => {
+    if (!event?.registrationOpenAt && !event?.registrationCloseAt) {
+      return null;
+    }
+
+    const now = new Date();
+    const openAt = event?.registrationOpenAt ? new Date(event.registrationOpenAt) : null;
+    const closeAt = event?.registrationCloseAt ? new Date(event.registrationCloseAt) : null;
+
+    if (openAt && now < openAt) {
+      return "not-open";
+    }
+
+    if (closeAt && now > closeAt) {
+      return "closed";
+    }
+
+    return "open";
+  }, [event?.registrationOpenAt, event?.registrationCloseAt]);
+
   const isRegisterDisabled =
     isSubmitting ||
     registrationStatus === "registered" ||
     registrationStatus === "attended" ||
-    registrationStatus === "waitlisted";
+    registrationStatus === "waitlisted" ||
+    registrationWindowStatus === "not-open" ||
+    registrationWindowStatus === "closed";
 
   const handleRegister = async () => {
     if (!event || isRegisterDisabled) {
@@ -352,6 +395,21 @@ export default function EventDetailsReviewPage() {
             {!registrationMessage && !registrationError && registrationStatus === "waitlisted" && (
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
                 You are currently on the waitlist{waitlistPosition ? ` at position #${waitlistPosition}` : ""}.
+              </div>
+            )}
+          </div>
+        )}
+
+        {registrationWindowStatus && (
+          <div className="px-6 pt-5">
+            {registrationWindowStatus === "not-open" && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                Registration opens {formatDateTime(event?.registrationOpenAt) ?? "soon"}.
+              </div>
+            )}
+            {registrationWindowStatus === "closed" && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                Registration closed {formatDateTime(event?.registrationCloseAt) ?? ""}.
               </div>
             )}
           </div>

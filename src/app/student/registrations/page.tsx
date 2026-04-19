@@ -72,6 +72,16 @@ export default function StudentRegistrationsPage() {
   const [activeFeedbackRegistrationId, setActiveFeedbackRegistrationId] = useState<string | null>(null);
   const [submittingFeedbackId, setSubmittingFeedbackId] = useState<string | null>(null);
 
+  const activeFeedbackRegistration = useMemo(() => {
+    if (!activeFeedbackRegistrationId) {
+      return null;
+    }
+
+    return registrations.find(
+      (registration) => registration._id === activeFeedbackRegistrationId,
+    ) ?? null;
+  }, [activeFeedbackRegistrationId, registrations]);
+
   useEffect(() => {
     const loadRegistrations = async () => {
       try {
@@ -272,67 +282,6 @@ export default function StudentRegistrationsPage() {
                       </p>
                     )}
 
-                    {activeFeedbackRegistrationId === registration._id && (
-                      <div className="mt-3 space-y-3">
-                        <div>
-                          <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
-                            Rating
-                          </label>
-                          <select
-                            value={feedbackForm.rating}
-                            onChange={(e) =>
-                              setFeedbackForm((current) => ({
-                                ...current,
-                                rating: Number(e.target.value),
-                              }))
-                            }
-                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none"
-                          >
-                            {[5, 4, 3, 2, 1].map((rating) => (
-                              <option key={rating} value={rating}>
-                                {rating} / 5
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
-                            Comment
-                          </label>
-                          <textarea
-                            rows={3}
-                            value={feedbackForm.comment}
-                            onChange={(e) =>
-                              setFeedbackForm((current) => ({
-                                ...current,
-                                comment: e.target.value,
-                              }))
-                            }
-                            placeholder="Share your event experience"
-                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none"
-                          />
-                        </div>
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setActiveFeedbackRegistrationId(null)}
-                            className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => submitFeedback(registration._id)}
-                            disabled={submittingFeedbackId === registration._id}
-                            className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            {submittingFeedbackId === registration._id
-                              ? "Saving..."
-                              : "Submit Feedback"}
-                          </button>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -359,6 +308,94 @@ export default function StudentRegistrationsPage() {
           </div>
         )}
       </div>
+
+      {activeFeedbackRegistration && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4 py-8">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Event Feedback
+                </p>
+                <h3 className="mt-1 text-lg font-bold text-slate-900">
+                  {activeFeedbackRegistration.event.title}
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Reference {buildReference(activeFeedbackRegistration._id)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveFeedbackRegistrationId(null)}
+                className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-100"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="mt-5 space-y-4">
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+                  Rating
+                </label>
+                <select
+                  value={feedbackForm.rating}
+                  onChange={(e) =>
+                    setFeedbackForm((current) => ({
+                      ...current,
+                      rating: Number(e.target.value),
+                    }))
+                  }
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none"
+                >
+                  {[5, 4, 3, 2, 1].map((rating) => (
+                    <option key={rating} value={rating}>
+                      {rating} / 5
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+                  Comment
+                </label>
+                <textarea
+                  rows={4}
+                  value={feedbackForm.comment}
+                  onChange={(e) =>
+                    setFeedbackForm((current) => ({
+                      ...current,
+                      comment: e.target.value,
+                    }))
+                  }
+                  placeholder="Share your event experience"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveFeedbackRegistrationId(null)}
+                className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => submitFeedback(activeFeedbackRegistration._id)}
+                disabled={submittingFeedbackId === activeFeedbackRegistration._id}
+                className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {submittingFeedbackId === activeFeedbackRegistration._id
+                  ? "Saving..."
+                  : "Submit Feedback"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 import { Input } from "@/components/index";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useLoginStore from "@/store/login";
 import { getDefaultRouteForRole, getRoleFromToken, getStoredToken } from "@/utils/auth";
 import { useRouter } from "next/navigation";
@@ -15,8 +15,25 @@ function Page() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  const { form, setForm, login, isLoading, error, clearError } =
+  const { form, setForm, login, googleLogin, isLoading, error, clearError } =
     useLoginStore();
+
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+  const handleGoogleCredential = useCallback(
+    async (credential: string) => {
+      try {
+        const response = await googleLogin(credential);
+        const role = getRoleFromToken(response.token);
+
+        if (role) {
+          router.replace(getDefaultRouteForRole(role));
+        }
+      } catch {
+      }
+    },
+    [googleLogin, router],
+  );
 
   useEffect(() => {
     const role = getRoleFromToken(getStoredToken());
@@ -25,6 +42,62 @@ function Page() {
       router.replace(getDefaultRouteForRole(role));
     }
   }, [router]);
+
+  useEffect(() => {
+    if (!googleClientId || typeof window === "undefined") {
+      return;
+    }
+
+    const buttonContainer = document.getElementById("googleSignInButton");
+    if (!buttonContainer) {
+      return;
+    }
+
+    const initialize = () => {
+      const google = (window as typeof window & { google?: any }).google;
+      if (!google?.accounts?.id) {
+        return;
+      }
+
+      google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: (response: { credential?: string }) => {
+          if (response?.credential) {
+            handleGoogleCredential(response.credential);
+          }
+        },
+      });
+
+      google.accounts.id.renderButton(buttonContainer, {
+        theme: "outline",
+        size: "large",
+        width: "100%",
+      });
+    };
+
+    if ((window as typeof window & { google?: any }).google?.accounts?.id) {
+      initialize();
+      return;
+    }
+
+    const existingScript = document.getElementById("google-identity-script");
+    if (existingScript) {
+      existingScript.addEventListener("load", initialize, { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = "google-identity-script";
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = initialize;
+    document.body.appendChild(script);
+
+    return () => {
+      script.onload = null;
+    };
+  }, [googleClientId, handleGoogleCredential]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -43,18 +116,9 @@ function Page() {
 
   return (
     <>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet"
-      />
-      <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet"
-      />
-
       <div
         className="flex min-h-screen"
-        style={{ fontFamily: "Inter, sans-serif" }}
+        style={{ fontFamily: "Space Grotesk, sans-serif",}}
       >
         {/* ── Left Panel ── */}
         <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center p-12 bg-blue-600">
@@ -225,14 +289,17 @@ function Page() {
               </p>
 
               {/* SSO */}
-              <button className="flex items-center justify-center gap-3 w-full py-3.5 px-4 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700">
-                <img
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAo64nueiuXqrEUNYEJeaHxQf38FoRuIGmKREM5bLrWRecO_X3bEwDkFn76SQj7r5Of-hJJ-zvoVeu7EFlJdqUdVCMGF3N6guvdXZOjtL3BrBnV5pB_kghAZIEC6cNMpWodR4IQ0QPJr6aaYUqaTPQllsUTY7uK9QtnxBmfljeI4sjMNX_IVwndSPZoWPxILGRtFsKq8EL-gjoYgWnWhfzdAseZrtixjVfjTj8TRlLkbWyyvO-tfOLa4QLlBqd6OAd7n9vL20H-Yzo"
-                  alt="Google Logo"
-                  className="w-4 h-4"
-                />
-                Sign in with College Account
-              </button>
+              {googleClientId ? (
+                <div id="googleSignInButton" className="w-full" />
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="flex items-center justify-center gap-3 w-full py-3.5 px-4 border border-slate-200 rounded-lg bg-white text-sm font-semibold text-slate-400 cursor-not-allowed"
+                >
+                  Google sign-in not configured
+                </button>
+              )}
             </div>
           </div>
         </div>

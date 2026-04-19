@@ -61,6 +61,10 @@ export default function CreateEventPage() {
     date: "",
     time: "",
     venue: "",
+    registrationOpenDate: "",
+    registrationOpenTime: "",
+    registrationCloseDate: "",
+    registrationCloseTime: "",
     mode: "offline" as "online" | "offline" | "hybrid",
   });
   const [selectedSpeakers, setSelectedSpeakers] = useState<string[]>([]);
@@ -79,6 +83,15 @@ export default function CreateEventPage() {
 
   const updateForm = (field: keyof typeof form, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const buildDateTime = (date: string, time: string) => {
+    if (!date || !time) {
+      return "";
+    }
+
+    const combined = new Date(`${date}T${time}`);
+    return Number.isNaN(combined.getTime()) ? "" : combined.toISOString();
   };
 
   const addSpeaker = (speakerId: string) => {
@@ -132,6 +145,8 @@ export default function CreateEventPage() {
           date: string;
           time: string;
           venue: string;
+          registrationOpenAt?: string;
+          registrationCloseAt?: string;
           mode: "online" | "offline" | "hybrid";
           speakers: string[];
           coverImageUrl: string;
@@ -144,6 +159,14 @@ export default function CreateEventPage() {
         date: form.date,
         time: form.time,
         venue: form.venue,
+        registrationOpenAt: buildDateTime(
+          form.registrationOpenDate,
+          form.registrationOpenTime,
+        ) || undefined,
+        registrationCloseAt: buildDateTime(
+          form.registrationCloseDate,
+          form.registrationCloseTime,
+        ) || undefined,
         mode: form.mode,
         speakers: selectedSpeakers,
         coverImageUrl,
@@ -158,6 +181,10 @@ export default function CreateEventPage() {
         date: "",
         time: "",
         venue: "",
+        registrationOpenDate: "",
+        registrationOpenTime: "",
+        registrationCloseDate: "",
+        registrationCloseTime: "",
         mode: "offline",
       });
       setSelectedSpeakers([]);
@@ -350,6 +377,44 @@ export default function CreateEventPage() {
               placeholder="Main Auditorium, Building A"
               icon={<FiMapPin size={18} className="text-slate-400" />}
             />
+          </FormSection>
+
+          <FormSection icon={<FiBell size={14} />} title="Registration Window">
+            <div className="grid gap-4 md:grid-cols-2">
+              <Input
+                id="registration-open-date"
+                label="Registration Opens (Date)"
+                type="date"
+                value={form.registrationOpenDate}
+                onChange={(e) => updateForm("registrationOpenDate", e.target.value)}
+              />
+              <Input
+                id="registration-open-time"
+                label="Registration Opens (Time)"
+                type="time"
+                value={form.registrationOpenTime}
+                onChange={(e) => updateForm("registrationOpenTime", e.target.value)}
+              />
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Input
+                id="registration-close-date"
+                label="Registration Closes (Date)"
+                type="date"
+                value={form.registrationCloseDate}
+                onChange={(e) => updateForm("registrationCloseDate", e.target.value)}
+              />
+              <Input
+                id="registration-close-time"
+                label="Registration Closes (Time)"
+                type="time"
+                value={form.registrationCloseTime}
+                onChange={(e) => updateForm("registrationCloseTime", e.target.value)}
+              />
+            </div>
+            <p className="text-xs text-slate-500">
+              Students can register only during this window. Leave all fields empty to keep registration always open.
+            </p>
           </FormSection>
 
           <FormSection icon={<FiMic size={14} />} title="Speakers & Media">

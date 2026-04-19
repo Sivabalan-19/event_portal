@@ -22,11 +22,11 @@ function Input({
   onChange,
 }: InputProps) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 text-black">
       {label && (
         <label
           htmlFor={id}
-          className="text-sm font-semibold  block"
+          className="text-sm font-semibold text-black  block"
         >
           {label}
         </label>

@@ -19,6 +19,11 @@ export type LoginResponse = {
   token: string;
 };
 
+export type GoogleLoginPayload = {
+  credential: string;
+  rememberMe: boolean;
+};
+
 export type LoginFormState = LoginPayload & {
   rememberMe: boolean;
 };
@@ -35,6 +40,7 @@ type LoginStore = {
   clearError: () => void;
   hydrateAuth: () => void;
   login: (payload?: LoginPayload) => Promise<LoginResponse>;
+  googleLogin: (credential: string, rememberMe?: boolean) => Promise<LoginResponse>;
   logout: () => void;
 };
 
@@ -105,7 +111,53 @@ export const useLoginStore = create<LoginStore>((set, get) => ({
       );
 
       clearStoredToken();
-      getStorage(form.rememberMe)?.setItem(AUTH_TOKEN_KEY, response.token);
+      getStorage(requestBody.rememberMe)?.setItem(
+        AUTH_TOKEN_KEY,
+        response.token,
+      );
+      const role = getRoleFromToken(response.token);
+
+      set({
+        token: response.token,
+        role,
+        isAuthenticated: Boolean(role),
+        isLoading: false,
+      });
+
+      return response;
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unable to sign in";
+
+      set({
+        error: message,
+        isLoading: false,
+        role: null,
+        isAuthenticated: false,
+      });
+
+      throw error;
+    }
+  },
+
+  googleLogin: async (credential, rememberMe) => {
+    const { form } = get();
+    const shouldRemember = rememberMe ?? form.rememberMe;
+    const requestBody: GoogleLoginPayload = {
+      credential,
+      rememberMe: shouldRemember,
+    };
+
+    set({ isLoading: true, error: null });
+
+    try {
+      const response = await createData<LoginResponse, GoogleLoginPayload>(
+        "/auth/google",
+        requestBody,
+      );
+
+      clearStoredToken();
+      getStorage(shouldRemember)?.setItem(AUTH_TOKEN_KEY, response.token);
       const role = getRoleFromToken(response.token);
 
       set({
