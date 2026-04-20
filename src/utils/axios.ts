@@ -31,6 +31,7 @@ api.interceptors.request.use((config) => {
 	}
 
 	const token = getStoredToken();
+	console.log(token);
 	if (!token) {
 		return config;
 	}
