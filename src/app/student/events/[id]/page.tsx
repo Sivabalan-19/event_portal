@@ -69,6 +69,30 @@ function formatDate(date?: string) {
       });
 }
 
+function getParsedDate(date?: string) {
+  if (!date) {
+    return null;
+  }
+
+  const parsedDate = new Date(date);
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+function formatEventDate(date?: string) {
+  const parsedDate = getParsedDate(date);
+
+  if (!parsedDate) {
+    return { day: "--", month: "TBD" };
+  }
+
+  return {
+    day: parsedDate.toLocaleDateString("en-US", { day: "2-digit" }),
+    month: parsedDate
+      .toLocaleDateString("en-US", { month: "short" })
+      .toUpperCase(),
+  };
+}
+
 function formatSpeakerNames(speakers?: Speaker[]) {
   if (!speakers?.length) {
     return "Speaker to be announced";
@@ -173,15 +197,15 @@ export default function EventDetailsReviewPage() {
     loadEvent();
   }, [params?.id]);
 
-  const detailItems = useMemo(() => {
+  const { eventDetails, registrationDetails } = useMemo(() => {
     if (!event) {
-      return [];
+      return { eventDetails: [], registrationDetails: [] };
     }
 
-    return [
+    const eventItems = [
       {
         icon: <BsCalendar3 size={18} className="text-blue-500" />,
-        label: "DATE & TIME",
+        label: "EVENT DATE",
         primary: formatDate(event.date),
         secondary: event.time || "Time to be announced",
       },
@@ -206,6 +230,23 @@ export default function EventDetailsReviewPage() {
         isLink: Boolean(event.speakers?.length),
       },
     ];
+
+    const registrationItems = [
+      {
+        icon: <BsCalendar3 size={18} className="text-indigo-500" />,
+        label: "REGISTRATION OPENS",
+        primary: formatDateTime(event.registrationOpenAt) || "To be announced",
+        secondary: "Opens for students",
+      },
+      {
+        icon: <BsCalendar3 size={18} className="text-indigo-500" />,
+        label: "REGISTRATION CLOSES",
+        primary: formatDateTime(event.registrationCloseAt) || "To be announced",
+        secondary: "Closes for students",
+      },
+    ];
+
+    return { eventDetails: eventItems, registrationDetails: registrationItems };
   }, [event]);
 
   const topics = useMemo(() => (event ? buildTopics(event) : []), [event]);
@@ -363,6 +404,14 @@ export default function EventDetailsReviewPage() {
             className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute top-4 left-4 rounded-lg bg-white px-2 py-2 text-center shadow-sm">
+            <p className="text-[10px] font-bold uppercase leading-none text-blue-600">
+              {formatEventDate(event.date).month}
+            </p>
+            <p className="text-lg font-extrabold leading-tight text-gray-900">
+              {formatEventDate(event.date).day}
+            </p>
+          </div>
           <span className="absolute bottom-4 left-4 rounded-md bg-blue-600 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
             {event.category || "Event"}
           </span>
@@ -415,25 +464,52 @@ export default function EventDetailsReviewPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-x-6 gap-y-6 border-b border-gray-100 px-6 py-5">
-          {detailItems.map((item) => (
-            <div key={item.label} className="flex items-start gap-3">
-              <div className="mt-0.5 shrink-0">{item.icon}</div>
-              <div>
-                <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-                  {item.label}
-                </p>
-                <p className="text-sm font-semibold text-gray-900">{item.primary}</p>
-                {item.isLink ? (
-                  <button type="button" className="mt-0.5 text-xs font-medium text-blue-600 hover:underline">
-                    {item.secondary}
-                  </button>
-                ) : (
-                  <p className="mt-0.5 text-xs text-gray-500">{item.secondary}</p>
-                )}
+      
+
+        <div className="border-b border-gray-100 px-6 py-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
+            Event schedule
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-6">
+            {eventDetails.map((item) => (
+              <div key={item.label} className="flex items-start gap-3">
+                <div className="mt-0.5 shrink-0">{item.icon}</div>
+                <div>
+                  <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+                    {item.label}
+                  </p>
+                  <p className="text-sm font-semibold text-gray-900">{item.primary}</p>
+                  {item.isLink ? (
+                    <button type="button" className="mt-0.5 text-xs font-medium text-blue-600 hover:underline">
+                      {item.secondary}
+                    </button>
+                  ) : (
+                    <p className="mt-0.5 text-xs text-gray-500">{item.secondary}</p>
+                  )}
+                </div>
               </div>
+            ))}
+          </div>
+
+          <div className="mt-8 rounded-2xl border border-indigo-100 bg-indigo-50/60 px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-500">
+              Registration window
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4">
+              {registrationDetails.map((item) => (
+                <div key={item.label} className="flex items-start gap-3">
+                  <div className="mt-0.5 shrink-0">{item.icon}</div>
+                  <div>
+                    <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-widest text-indigo-400">
+                      {item.label}
+                    </p>
+                    <p className="text-sm font-semibold text-slate-900">{item.primary}</p>
+                    <p className="mt-0.5 text-xs text-slate-600">{item.secondary}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
 
         <div className="px-6 py-6">

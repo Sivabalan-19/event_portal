@@ -21,6 +21,7 @@ type EventRecord = {
   title: string;
   category?: string;
   date?: string;
+  createdAt?: string;
   venue?: string;
   speakers?: Speaker[];
   coverImageUrl?: string;
@@ -121,9 +122,9 @@ export default function AllEventsPage() {
         return matchesFilter && matchesSearch;
       })
       .sort((left, right) => {
-        const leftDate = getParsedDate(left.date)?.getTime() ?? Number.MAX_SAFE_INTEGER;
-        const rightDate = getParsedDate(right.date)?.getTime() ?? Number.MAX_SAFE_INTEGER;
-        return leftDate - rightDate;
+        const leftCreated = new Date(left.createdAt || 0).getTime();
+        const rightCreated = new Date(right.createdAt || 0).getTime();
+        return rightCreated - leftCreated;
       });
   }, [activeFilter, events, searchTerm]);
 
