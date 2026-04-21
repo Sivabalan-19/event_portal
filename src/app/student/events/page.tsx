@@ -25,6 +25,8 @@ type EventRecord = {
   venue?: string;
   speakers?: Speaker[];
   coverImageUrl?: string;
+  registrationOpenAt?: string;
+  registrationCloseAt?: string;
 };
 
 const filters = [
@@ -53,6 +55,27 @@ function getParsedDate(date?: string) {
 
   const parsedDate = new Date(date);
   return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+function isRegistrationOpen(event: EventRecord) {
+  const openAt = getParsedDate(event.registrationOpenAt);
+  const closeAt = getParsedDate(event.registrationCloseAt);
+
+  if (!openAt && !closeAt) {
+    return true;
+  }
+
+  const now = new Date();
+
+  if (openAt && now < openAt) {
+    return false;
+  }
+
+  if (closeAt && now > closeAt) {
+    return false;
+  }
+
+  return true;
 }
 
 function formatEventDate(date?: string) {
@@ -104,7 +127,7 @@ export default function AllEventsPage() {
       .filter((event) => {
         const category = event.category || "";
         const matchesFilter =
-          activeFilter === "Active Events" ||
+          (activeFilter === "Active Events" && isRegistrationOpen(event)) ||
           activeFilter === "All Events" ||
           (activeFilter === "Technical" && category === "Technical") ||
           (activeFilter === "Cultural" && category === "Cultural") ||
