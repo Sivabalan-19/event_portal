@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BsCalendar3, BsSearch } from "react-icons/bs";
+import { BsSearch } from "react-icons/bs";
 import { IoCodeSlash } from "react-icons/io5";
 import { GiMusicalNotes } from "react-icons/gi";
 import { MdOutlineDesignServices } from "react-icons/md";
@@ -28,19 +28,19 @@ type EventRecord = {
 };
 
 const filters = [
+  "Active Events",
   "All Events",
   "Technical",
   "Cultural",
   "Workshops",
-  "Pick Date",
 ];
 
 const filterIcons: Record<string, React.ReactNode> = {
+  "Active Events": <BsSearch size={13} />,
   "All Events": <BsSearch size={13} />,
   Technical: <IoCodeSlash size={13} />,
   Cultural: <GiMusicalNotes size={13} />,
   Workshops: <MdOutlineDesignServices size={13} />,
-  "Pick Date": <BsCalendar3 size={12} />,
 };
 
 const FALLBACK_EVENT_IMAGE =
@@ -104,11 +104,11 @@ export default function AllEventsPage() {
       .filter((event) => {
         const category = event.category || "";
         const matchesFilter =
+          activeFilter === "Active Events" ||
           activeFilter === "All Events" ||
           (activeFilter === "Technical" && category === "Technical") ||
           (activeFilter === "Cultural" && category === "Cultural") ||
-          (activeFilter === "Workshops" && category === "Workshop") ||
-          (activeFilter === "Pick Date" && Boolean(getParsedDate(event.date)));
+          (activeFilter === "Workshops" && category === "Workshop");
 
         const speakerNames =
           event.speakers?.map((speaker) => speaker.name).join(" ") || "";

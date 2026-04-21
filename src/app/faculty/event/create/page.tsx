@@ -74,10 +74,7 @@ export default function CreateEventPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const availableSpeakers = speakerOptions.filter(
-    (speaker) => !selectedSpeakers.includes(speaker._id),
-  );
-  const filteredSpeakerOptions = availableSpeakers.filter((speaker) =>
+  const filteredSpeakerOptions = speakerOptions.filter((speaker) =>
     speaker.name.toLowerCase().includes(speakerSearch.trim().toLowerCase()),
   );
 
@@ -107,6 +104,15 @@ export default function CreateEventPage() {
     setSelectedSpeakers((current) =>
       current.filter((currentSpeaker) => currentSpeaker !== speakerId),
     );
+  };
+
+  const toggleSpeaker = (speakerId: string) => {
+    if (selectedSpeakers.includes(speakerId)) {
+      removeSpeaker(speakerId);
+      return;
+    }
+
+    addSpeaker(speakerId);
   };
 
   useEffect(() => {
@@ -476,9 +482,9 @@ export default function CreateEventPage() {
 
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-slate-500">
-                  Available Speakers
+                  Select Speakers
                 </label>
-                <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs">
+                <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs">
                   {filteredSpeakerOptions.length === 0 && (
                     <div className="py-1 text-slate-400">
                       {speakerSearch
@@ -490,13 +496,23 @@ export default function CreateEventPage() {
                     <button
                       key={speaker._id}
                       type="button"
-                      onClick={() => addSpeaker(speaker._id)}
-                      className="flex w-full items-center justify-between rounded-md px-2 py-1 text-left text-slate-700 hover:bg-blue-50"
+                      onClick={() => toggleSpeaker(speaker._id)}
+                      className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-slate-700 hover:bg-blue-50"
+                      aria-pressed={selectedSpeakers.includes(speaker._id)}
                     >
-                      <span className="truncate">{speaker.name}</span>
-                      <span className="text-[10px] font-semibold uppercase text-blue-500">
-                        Add
-                      </span>
+                      <input
+                        type="checkbox"
+                        checked={selectedSpeakers.includes(speaker._id)}
+                        onChange={() => toggleSpeaker(speaker._id)}
+                        className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                        aria-label={`Select ${speaker.name}`}
+                      />
+                      <span className="flex-1 truncate">{speaker.name}</span>
+                      {selectedSpeakers.includes(speaker._id) && (
+                        <span className="text-[10px] font-semibold uppercase text-blue-500">
+                          Selected
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>

@@ -223,40 +223,7 @@ export default function CreateSpeakerPage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-slate-700">
-                Profile Image
-              </label>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const selectedFile = e.target.files?.[0];
-                  setProfileImageName(selectedFile?.name ?? "");
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex min-h-48 w-full flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center transition-colors hover:border-blue-300 hover:bg-blue-50/40"
-              >
-                <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-                  {profileImageName ? (
-                    <FiImage size={22} />
-                  ) : (
-                    <FiUploadCloud size={22} />
-                  )}
-                </span>
-                <span className="text-sm font-semibold text-slate-700">
-                  {profileImageName || "Upload speaker photo"}
-                </span>
-                <span className="mt-1 text-xs text-slate-400">
-                  PNG or JPG, recommended square image, max 5MB
-                </span>
-              </button>
-            </div>
+        
           </FormSection>
 
           <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
